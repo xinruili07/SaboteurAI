@@ -15,6 +15,19 @@ import Saboteur.cardClasses.SaboteurMap;
 import Saboteur.cardClasses.SaboteurTile;
 import boardgame.Board;
 
+/*
+* Main methods
+*   getCurrentPlayerCards() - Returns current player hand
+*   getHiddenIntBoard() - Returns the board as 0,1 or -1 where 1 are tunnel, 0 walls and -1 empty position. Hidden objectives will be displayed as empty.
+*   getHiddenBoard() - Returns the board as SaboteurTile, where the remaining hidden objectives for the current playing player are displayed as tile number 8 (the cross).
+*   getRandomMove() [but should not be really useful...]
+*   getTurnPlayer() - Get the current player number (1 for player 1, 0 for player 2)
+*   isLegal() - Check if the move is legal (card in player's hand and then game rules apply
+*   getNbMalus(with your or the other player number)
+*   verifyLegit() - Given a tile’s path and a position (x,y) indicates if the card can be put at this position legally
+*   possiblePositions() - Returns all possible position for a tile to be put on the board
+*   getAllLegalMoves() - Returns all legal moves the current player could do
+* */
 public class boardStateClone {
 	public static final int BOARD_SIZE = 14;
     public static final int originPos = 5;
@@ -47,7 +60,8 @@ public class boardStateClone {
     
     boardStateClone(SaboteurBoardState boardState) {
     	this.board = boardState.getHiddenBoard();
-    	this.player1Cards = boardState.getCurrentPlayerCards();
+    	this.intBoard = boardState.getHiddenIntBoard();
+    	this.player1Cards = boardState.getCurrentPlayerCards(); //turn player should be 1
     	this.player1nbMalus = boardState.getNbMalus(1);
     	this.player2nbMalus = boardState.getNbMalus(2);
     }
@@ -55,7 +69,8 @@ public class boardStateClone {
     public int getWinner() { return winner; }
     
     public void setWinner(int win) { winner = win; }
-    
+
+    //SHOULD NOT BE USED
     public SaboteurMove getRandomMove() {
         ArrayList<SaboteurMove> moves = getAllLegalMoves();
         return moves.get(rand.nextInt(moves.size()));
