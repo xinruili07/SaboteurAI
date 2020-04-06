@@ -7,5 +7,6 @@
 **/.DS_Store
 
 #Ignore intellij build files
-.ideas
+.idea
+
 SaboteurAI.iml
