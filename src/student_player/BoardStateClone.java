@@ -158,6 +158,9 @@ public class BoardStateClone extends BoardState{
         return false;
     }
 
+    public Boolean checkOneMoveFromGoal(){
+        return true;
+    }
     public ArrayList<SaboteurTile> getLastCardPlayed(SaboteurTile[][] before, SaboteurTile[][] after){
         ArrayList<SaboteurTile> temp = new ArrayList<>();
         String name = "";
@@ -221,23 +224,6 @@ public class BoardStateClone extends BoardState{
     public void setLastMove(SaboteurMove move){
         this.lastMove = move;
     }
-
-//    public Boolean removeCardFromDeck(SaboteurMove move){
-//        if (move != null && this.Deck != null){
-//            String name = move.getCardPlayed().getName();
-//            if(name.contains("flip")){
-//                name = name.split("_flip")[0];
-//                System.out.println(name);
-//            }
-//            for(SaboteurCard c : this.Deck){
-//                if (name.equals(c.getName())){
-//                    this.Deck.remove(c);
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
-//    }
 
     // ALL CLONING METHODS
     public ArrayList<SaboteurCard> getPlayer1Cards(){

@@ -2,6 +2,7 @@ package student_player;
 
 import Saboteur.SaboteurBoard;
 import Saboteur.SaboteurMove;
+import Saboteur.cardClasses.SaboteurBonus;
 import Saboteur.cardClasses.SaboteurCard;
 import Saboteur.cardClasses.SaboteurDrop;
 import Saboteur.cardClasses.SaboteurMap;
@@ -37,11 +38,6 @@ public class StudentPlayer extends SaboteurPlayer {
 
         MyTools tool = new MyTools();
 
-        for(SaboteurCard card : boardState.getCurrentPlayerCards()){
-            System.out.println(card.getName());
-        }
-        System.out.println("Index : " + tool.getWorstDeadEndCard(boardState));
-
         //Initialize or update the boardStateClone
         if(stateClone == null){
             stateClone = new BoardStateClone((boardState));
@@ -53,9 +49,9 @@ public class StudentPlayer extends SaboteurPlayer {
         //Check if goal is revealed
         Boolean goalFound = stateClone.checkGoal();
 
-        //Check if player has map card then play if goal is not found yet
         for(int i = 0; i < boardState.getCurrentPlayerCards().size(); i++){
             SaboteurCard card = boardState.getCurrentPlayerCards().get(i);
+            //Check if player has map card then play if goal is not found yet
             if(card.getName().equals("Map")) {
                 if (!goalFound) {
                     int y = tool.getRandomGoalPosition();
@@ -63,14 +59,24 @@ public class StudentPlayer extends SaboteurPlayer {
                     return new SaboteurMove(card, 12, y, boardState.getTurnPlayer());
                 }
                 else{
-                    return new SaboteurMove(new SaboteurDrop(), i , 0, boardState.getTurnPlayer());
+                    Move move = new SaboteurMove(new SaboteurDrop(), i , 0, boardState.getTurnPlayer());
+                    stateClone.removeCardFromDeck(move);
+                    return move;
+                }
+            }
+            //Check if malus is active then play bonus card or drop the worst dead end card
+            else if(boardState.getNbMalus(boardState.getTurnPlayer()) > 0){
+                if(card.getName().equals("Bonus")){
+                    stateClone.removeCardFromDeck(card);
+                    return new SaboteurMove(card,0,0,boardState.getTurnPlayer());
+                }
+                else{
+                    int index = tool.getWorstDeadEndCard(boardState);
+                    stateClone.removeCardFromDeck(boardState.getCurrentPlayerCards().get(i));
+                    return new SaboteurMove(new SaboteurDrop(), index, 0, boardState.getTurnPlayer());
                 }
             }
         }
-
-        //Drop the dead end card with the least possible positions
-        int index = tool.getWorstDeadEndCard(boardState);
-        Move move = new SaboteurMove(new SaboteurDrop(), index, 0, boardState.getTurnPlayer());
 
         //Check if opponent is one card from win/from a hidden pos(when not reveal - then play malus
 
@@ -81,9 +87,6 @@ public class StudentPlayer extends SaboteurPlayer {
 
         //Drop card (dead ends)
         //Monte Carlo Algorithm
-        for(SaboteurCard c : this.stateClone.getCurrentPlayerCards()){
-
-        }
 
 
         // Is random the best you can do?
