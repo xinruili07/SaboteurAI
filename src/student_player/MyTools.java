@@ -61,23 +61,34 @@ public class MyTools {
         return -1;
     }
 
-    public int getWorstDeadEndCard(SaboteurBoardState bs){
-        int index = 0;
-        int max_value = Integer.MIN_VALUE;
-        calculatePossiblePositions(bs,dead_ends);
+    public int getWorstCard(SaboteurBoardState bs, String list){
+        int index = -1;
+        int min_value = Integer.MAX_VALUE;
+        Map<String,Integer> cards = new HashMap<String,Integer>();
+
+        if(list.equals("dead_end")){
+            cards.putAll(dead_ends);
+        }
+        else if (list.equals("good_card")){
+            cards.putAll(good_cards);
+        }
+        else{
+            return index;
+        }
+        calculatePossiblePositions(bs,cards);
         for(int i = 0; i < bs.getCurrentPlayerCards().size(); i++){
             String name = bs.getCurrentPlayerCards().get(i).getName();
             if(name.contains("Tile:")){
                 name = name.split("Tile:")[1];
             }
-            if(dead_ends.containsKey(name)){
-                if(dead_ends.get(name) > max_value) {
-                    max_value = dead_ends.get(name);
+            if(cards.containsKey(name)){
+                if(cards.get(name) < min_value) {
+                    min_value = cards.get(name);
                     index = i;
                 }
-                if(dead_ends.containsKey(name+"_flip")){
-                    if(dead_ends.get(name+"_flip") > max_value) {
-                        max_value = dead_ends.get(name);
+                if(cards.containsKey(name+"_flip")){
+                    if(cards.get(name+"_flip") < min_value) {
+                        min_value = cards.get(name);
                         index = i;
                     }
                 }
@@ -86,30 +97,6 @@ public class MyTools {
         return index;
     }
 
-    public int getBestCard(SaboteurBoardState bs){
-        int index = 0;
-        int min_value = Integer.MAX_VALUE;
-        calculatePossiblePositions(bs,good_cards);
-        for(int i = 0; i < bs.getCurrentPlayerCards().size(); i++) {
-            String name = bs.getCurrentPlayerCards().get(i).getName();
-            if (name.contains("Tile:")) {
-                name = name.split("Tile:")[1];
-            }
-            if (good_cards.containsKey(name)) {
-                if (good_cards.get(name) < min_value) {
-                    min_value = good_cards.get(name);
-                    index = i;
-                }
-                if (good_cards.containsKey(name + "_flip")) {
-                    if (good_cards.get(name + "_flip") < min_value) {
-                        min_value = good_cards.get(name);
-                        index = i;
-                    }
-                }
-            }
-        }
-        return index;
-    }
     public int checkDistance(SaboteurTile tile, SaboteurTile goal){
         return 0;
     }

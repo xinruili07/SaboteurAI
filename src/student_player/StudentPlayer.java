@@ -71,7 +71,10 @@ public class StudentPlayer extends SaboteurPlayer {
                     return new SaboteurMove(card,0,0,boardState.getTurnPlayer());
                 }
                 else{
-                    int index = tool.getWorstDeadEndCard(boardState);
+                    int index = tool.getWorstCard(boardState,"dead_end");
+                    if (index == -1){
+                        index = tool.getWorstCard(boardState,"good_card");
+                    }
                     stateClone.removeCardFromDeck(boardState.getCurrentPlayerCards().get(i));
                     return new SaboteurMove(new SaboteurDrop(), index, 0, boardState.getTurnPlayer());
                 }
