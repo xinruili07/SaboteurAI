@@ -59,7 +59,7 @@ public class BoardStateClone extends BoardState{
 
     private boolean goalFound;
     private int[] goalLocation;
-    private boolean oneTileFromGoal;
+    private boolean oneMoveFromWin;
     private SaboteurMove lastMove;
 
     private int turnPlayer;
@@ -81,7 +81,7 @@ public class BoardStateClone extends BoardState{
         Random startRand = new Random();
         int idx = startRand.nextInt(3);
         this.goalLocation = hiddenPos[idx];
-        this.oneTileFromGoal = false;
+        this.oneMoveFromWin = false;
         this.lastMove = null;
 
         // Initialize the deck
@@ -127,7 +127,7 @@ public class BoardStateClone extends BoardState{
         ArrayList<SaboteurTile> cardPlayed = getLastCardPlayed(this.board,boardState.getHiddenBoard());
         for(SaboteurTile c : cardPlayed){
             System.out.println("Card in temp remaining : " + c.getName());
-            //removeCardFromDeck(c);
+            removeCardFromDeck(c);
         }
 
         this.board = boardState.getHiddenBoard();
@@ -146,7 +146,7 @@ public class BoardStateClone extends BoardState{
         turnNumber = boardState.getTurnNumber();
     }
 
-    private Boolean checkGoal(){
+    public Boolean checkGoal(){
         for(int i = 0; i < 3; i++){
             SaboteurTile tile = this.board[hiddenPos[i][0]][hiddenPos[i][1]];
             if(tile.getIdx() == "nugget"){

@@ -20,7 +20,6 @@ public class RandomSaboteurPlayer extends SaboteurPlayer {
     public Move chooseMove(SaboteurBoardState boardState) {
         if(boardState.getCurrentPlayerCards().contains(new SaboteurMap())){
             return new SaboteurMove(new SaboteurMap(),12,5,boardState.getTurnPlayer());
-
         }
         System.out.println("random player acting as player number: "+boardState.getTurnPlayer());
 //        for(int i = 0; i < boardState.getHiddenBoard().length; i++){

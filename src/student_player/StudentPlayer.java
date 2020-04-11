@@ -3,6 +3,8 @@ package student_player;
 import Saboteur.SaboteurBoard;
 import Saboteur.SaboteurMove;
 import Saboteur.cardClasses.SaboteurCard;
+import Saboteur.cardClasses.SaboteurDrop;
+import Saboteur.cardClasses.SaboteurMap;
 import boardgame.BoardState;
 import boardgame.Move;
 
@@ -12,7 +14,6 @@ import Saboteur.SaboteurBoardState;
 /** A player file submitted by a student. */
 public class StudentPlayer extends SaboteurPlayer {
 
-    private Move lastMove;
     private BoardStateClone stateClone;
 
     /**
@@ -34,6 +35,9 @@ public class StudentPlayer extends SaboteurPlayer {
         // For example, maybe you'll need to load some pre-processed best opening
         // strategies...
 
+        MyTools tool = new MyTools();
+
+        //Initialize or update the boardStateClone
         if(stateClone == null){
             stateClone = new BoardStateClone((boardState));
         }
@@ -41,11 +45,27 @@ public class StudentPlayer extends SaboteurPlayer {
             stateClone.updateState(boardState);
         }
 
-        //Plan
-        //Clone SaboteurBoardState
-        //Update deck
+        //Check if goal is revealed
+        Boolean goalFound = stateClone.checkGoal();
 
-        //Check if player has map card - then play
+        //Check if player has map card then play if goal is not found yet
+        for(int i = 0; i < boardState.getCurrentPlayerCards().size(); i++){
+            SaboteurCard card = boardState.getCurrentPlayerCards().get(i);
+            if(card.getName().equals("Map")) {
+                if (!goalFound) {
+                    int y = tool.getRandomGoalPosition();
+                    stateClone.removeCardFromDeck(card);
+                    return new SaboteurMove(card, 12, y, boardState.getTurnPlayer());
+                }
+                else{
+                    return new SaboteurMove(new SaboteurDrop(), i , 0, boardState.getTurnPlayer());
+                }
+            }
+        }
+
+        //Drop the dead end card with the least possible positions
+        int index = tool.getWorstDeadEndCard(boardState);
+        Move move = new SaboteurMove(new SaboteurDrop(), index, 0, boardState.getTurnPlayer());
 
         //Check if opponent is one card from win/from a hidden pos(when not reveal - then play malus
 
