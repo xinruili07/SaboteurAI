@@ -48,9 +48,15 @@ public class MyTools {
         int min_value = Integer.MAX_VALUE;
         int index = 0;
         for(int i = 0; i < bs.getCurrentPlayerCards().size(); i++){
-            String trim_name = bs.getCurrentPlayerCards().get(i).getName().split("Tile")[0];
-            if(dead_ends.get(trim_name) < min_value){
-                index = i;
+            String name = bs.getCurrentPlayerCards().get(i).getName();
+            if(name.contains("Tile:")){
+                name = name.split("Tile:")[1];
+            }
+            if(dead_ends.containsKey(name)){
+                if(dead_ends.get(name) < min_value){
+                    min_value = dead_ends.get(name);
+                    index = i;
+                }
             }
         }
         return index;
@@ -65,6 +71,7 @@ public class MyTools {
             SaboteurTile tile = new SaboteurTile(entry.getKey());
             int numPositions = bs.possiblePositions(tile).size();
             entry.setValue(numPositions);
+            System.out.println("Entry : " + entry.getKey() + " | Value : " + entry.getValue());
         }
     }
 

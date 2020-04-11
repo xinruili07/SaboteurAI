@@ -37,6 +37,11 @@ public class StudentPlayer extends SaboteurPlayer {
 
         MyTools tool = new MyTools();
 
+        for(SaboteurCard card : boardState.getCurrentPlayerCards()){
+            System.out.println(card.getName());
+        }
+        System.out.println("Index : " + tool.getWorstDeadEndCard(boardState));
+
         //Initialize or update the boardStateClone
         if(stateClone == null){
             stateClone = new BoardStateClone((boardState));
