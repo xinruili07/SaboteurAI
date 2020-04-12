@@ -84,6 +84,18 @@ public class BoardStateClone extends BoardState{
         this.goalLocation = hiddenPos[idx];
         this.oneMoveFromWin = false;
         this.lastMove = null;
+        
+     // initialize the hidden position:
+        ArrayList<String> list =new ArrayList<String>();
+        list.add("hidden1");
+        list.add("hidden2");
+        list.add("nugget");
+        for(int i = 0; i < 3; i++){
+            int secondidx = startRand.nextInt(list.size());
+            this.board[hiddenPos[i][0]][hiddenPos[i][1]] = new SaboteurTile(list.remove(secondidx));
+            this.hiddenCards[i] = this.board[hiddenPos[i][0]][hiddenPos[i][1]];
+        }
+
 
         // Initialize the deck
         this.player1Cards = boardState.getCurrentPlayerCards();
@@ -110,7 +122,7 @@ public class BoardStateClone extends BoardState{
 //            int val = this.DeckComposition.get(cardName);
 //            this.DeckComposition.put(cardName,val-1);
 //        }
-
+        
         //Get the player effects:
         this.player1nbMalus = boardState.getNbMalus(1);
         this.player2nbMalus = boardState.getNbMalus(2);
@@ -123,11 +135,11 @@ public class BoardStateClone extends BoardState{
     
     public BoardStateClone(BoardStateClone boardState) {
         this.board = boardState.getHiddenBoard();
-        this.intBoard = boardState.getHiddenIntBoard();
+        // this.intBoard = boardState.getHiddenIntBoard();
 
         this.player1Cards = boardState.getPlayer1Cards();
         this.player2Cards = boardState.getPlayer2Cards();
-        this.Deck = boardState.getDeck();
+        this.Deck = boardState.getDeckClone();
         this.hiddenCards = boardState.getHidden();
         this.hiddenRevealed = boardState.getHiddenRevealed();
         this.player1hiddenRevealed = boardState.getPlayer1hiddenRevealed();
@@ -266,7 +278,7 @@ public class BoardStateClone extends BoardState{
         return p2Cards;
     }
 
-    public ArrayList<SaboteurCard> getDeck1(){
+    public ArrayList<SaboteurCard> getDeckClone(){
         ArrayList<SaboteurCard> deck = new ArrayList<SaboteurCard>();
         for(int i=0;i<this.Deck.size();i++){
             deck.add(i,SaboteurCard.copyACard(this.Deck.get(i).getName()));
@@ -867,7 +879,7 @@ public class BoardStateClone extends BoardState{
             To verify a path, we use a simple search algorithm where we propagate a front of visited neighbor.
                TODO To speed up: The neighbor are added ranked on their distance to the origin... (simply use a PriorityQueue with a Comparator)
         */
-        this.getHiddenIntBoard(); //update the int board.
+        // this.getHiddenIntBoard(); //update the int board.
         boolean atLeastOnefound = false;
         for(SaboteurTile target : objectives){
             ArrayList<int[]> originTargets = new ArrayList<>();

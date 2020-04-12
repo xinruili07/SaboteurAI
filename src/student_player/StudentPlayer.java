@@ -39,9 +39,13 @@ public class StudentPlayer extends SaboteurPlayer {
         if(stateClone == null){
             stateClone = new BoardStateClone((boardState));
         }
+        
+        stateClone = new BoardStateClone(stateClone);
+        /*
         else {
             stateClone.updateState(boardState);
         }
+        */
 
         //Check if goal is revealed
         Boolean goalFound = tool.checkGoal(boardState);
