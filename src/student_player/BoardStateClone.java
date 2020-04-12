@@ -120,6 +120,26 @@ public class BoardStateClone extends BoardState{
         turnPlayer = boardState.getTurnPlayer();
         turnNumber = boardState.getTurnNumber();
     }
+    
+    public BoardStateClone(BoardStateClone boardState) {
+        this.board = boardState.getHiddenBoard();
+        this.intBoard = boardState.getHiddenIntBoard();
+
+        this.player1Cards = boardState.getPlayer1Cards();
+        this.player2Cards = boardState.getPlayer2Cards();
+        this.Deck = boardState.getDeck();
+        this.hiddenCards = boardState.getHidden();
+        this.hiddenRevealed = boardState.getHiddenRevealed();
+        this.player1hiddenRevealed = boardState.getPlayer1hiddenRevealed();
+        this.player2hiddenRevealed = boardState.getPlayer2hiddenRevealed();
+
+        this.player1nbMalus = boardState.getNbMalus(1);
+        this.player2nbMalus = boardState.getNbMalus(2);
+        rand = new Random(2019);
+        winner = boardState.getWinner();
+        turnPlayer = boardState.getTurnPlayer();
+        turnNumber = boardState.getTurnNumber();
+    }
 
     public void updateState(SaboteurBoardState boardState) {
 
@@ -907,8 +927,9 @@ public class BoardStateClone extends BoardState{
                 break;
             }
         }
+        boolean playerWin = this.hiddenRevealed[nuggetIdx];
         // Changed winning criteria for our AI such that reach all hidden spot is a win for now
-        boolean playerWin = this.hiddenRevealed[0] && this.hiddenRevealed[1] && this.hiddenRevealed[2];
+        // boolean playerWin = this.hiddenRevealed[0] && this.hiddenRevealed[1] && this.hiddenRevealed[2];
         if (playerWin) { // Current player has won
             winner = turnPlayer;
         } else if (winner==Board.NOBODY) {

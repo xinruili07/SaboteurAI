@@ -23,6 +23,8 @@ public class MyTools {
     private ArrayList<String> right_cards = new ArrayList<>(Arrays.asList("5","6_flip","7","8","9","9_flip","10"));
     private ArrayList<String> top_cards = new ArrayList<>(Arrays.asList("5_flip","6","6_flip","7","8","9_flip"));
     private ArrayList<String> bottom_cards = new ArrayList<>(Arrays.asList("5","6","6_flip","7_flip","8","9"));
+    
+    private ArrayList<String> generallyBadCards = new ArrayList<>(Arrays.asList("1", "2","2_flip","3","3_flip","4","4_flip","11","11_flip","12","12_flip", "13","14","14_flip","15"));
 
     public static final int[][] hiddenPos = {{originPos+7,originPos-2},{originPos+7,originPos},{originPos+7,originPos+2}};
 
@@ -65,8 +67,9 @@ public class MyTools {
 
     public int getWorstCardInHand(SaboteurBoardState bs) {
         for (int i = 0; i < bs.getCurrentPlayerCards().size(); i++) {
-
-
+        	if (generallyBadCards.contains(bs.getCurrentPlayerCards().get(i))) {
+        		return i;
+        	}
         }
         return 0;
     }
