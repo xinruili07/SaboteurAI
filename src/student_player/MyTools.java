@@ -32,7 +32,7 @@ public class MyTools {
         y_goal.add(originPos);
         y_goal.add(originPos + 2);
 
-        goal = new int[]{originPos+7,originPos};
+        goal = new int[]{originPos+7,originPos}; //Default goal is the center  one at (12,5)
         goalFound = false;
     }
 
@@ -63,12 +63,13 @@ public class MyTools {
         return -1;
     }
 
-    public int getWorstCardInHand(SaboteurBoardState bs) {
-        for (int i = 0; i < bs.getCurrentPlayerCards().size(); i++) {
+    public int getWorstCardInHand(BoardStateClone bs) {
 
+        int index = getWorstDeadEnd(bs);
+        if(index == -1){
 
         }
-        return 0;
+        return index;
     }
 
     public int[] getGoal(){
@@ -88,7 +89,7 @@ public class MyTools {
         return false;
     }
 
-    public int getWorstDeadEnd(SaboteurBoardState bs){
+    public int getWorstDeadEnd(BoardStateClone bs){
         int index = -1;
         int min_value = Integer.MAX_VALUE;
         String name ="";
@@ -116,7 +117,7 @@ public class MyTools {
     }
 
 
-    public SaboteurMove getBestTile(SaboteurBoardState bs, int[] goal){
+    public SaboteurMove getBestTile(BoardStateClone bs, int[] goal){
         ArrayList<SaboteurMove> moves = bs.getAllLegalMoves();
         SaboteurMove bestMove = null;
         double min_dist = 0.0;
@@ -130,40 +131,42 @@ public class MyTools {
             if(m.getCardPlayed() instanceof SaboteurTile){
                 SaboteurTile tile = (SaboteurTile) m.getCardPlayed();
                 if(connectors.contains(tile.getIdx())){
-                    if(left_cards.contains(tile.getIdx())){
-                        int x_left = 3 * m.getPosPlayed()[0];
-                        int y_left = 3 * m.getPosPlayed()[1] + 1;
-                        double dist = Math.sqrt((x_goal - x_left)^2 + (y_goal - y_left)^2);
-                        if(min_dist > dist){
-                            min_dist = dist;
-                            bestMove = m;
+                    if(checkExistingPath(bs,m)) {
+                        if (left_cards.contains(tile.getIdx())) {
+                            int x_left = 3 * m.getPosPlayed()[0];
+                            int y_left = 3 * m.getPosPlayed()[1] + 1;
+                            double dist = Math.sqrt((x_goal - x_left) ^ 2 + (y_goal - y_left) ^ 2);
+                            if (min_dist > dist) {
+                                min_dist = dist;
+                                bestMove = m;
+                            }
                         }
-                    }
-                    if(right_cards.contains(tile.getIdx())){
-                        int x_right = 3 * m.getPosPlayed()[0] + 2;
-                        int y_right = 3 * m.getPosPlayed()[1] + 1;
-                        double dist = Math.sqrt((x_goal - x_right)^2 + (y_goal - y_right)^2);
-                        if(min_dist > dist){
-                            min_dist = dist;
-                            bestMove = m;
+                        if (right_cards.contains(tile.getIdx())) {
+                            int x_right = 3 * m.getPosPlayed()[0] + 2;
+                            int y_right = 3 * m.getPosPlayed()[1] + 1;
+                            double dist = Math.sqrt((x_goal - x_right) ^ 2 + (y_goal - y_right) ^ 2);
+                            if (min_dist > dist) {
+                                min_dist = dist;
+                                bestMove = m;
+                            }
                         }
-                    }
-                    if(top_cards.contains(tile.getIdx())){
-                        int x_top = 3 * m.getPosPlayed()[0] + 1;
-                        int y_top = 3 * m.getPosPlayed()[1] + 2;
-                        double dist = Math.sqrt((x_goal - x_top)^2 + (y_goal - y_top)^2);
-                        if(min_dist > dist){
-                            min_dist = dist;
-                            bestMove = m;
+                        if (top_cards.contains(tile.getIdx())) {
+                            int x_top = 3 * m.getPosPlayed()[0] + 1;
+                            int y_top = 3 * m.getPosPlayed()[1] + 2;
+                            double dist = Math.sqrt((x_goal - x_top) ^ 2 + (y_goal - y_top) ^ 2);
+                            if (min_dist > dist) {
+                                min_dist = dist;
+                                bestMove = m;
+                            }
                         }
-                    }
-                    if(bottom_cards.contains(tile.getIdx())){
-                        int x_bottom = 3 * m.getPosPlayed()[0] + 1;
-                        int y_bottom = 3 * m.getPosPlayed()[1];
-                        double dist = Math.sqrt((x_goal - x_bottom)^2 + (y_goal - y_bottom)^2);
-                        if(min_dist > dist){
-                            min_dist = dist;
-                            bestMove = m;
+                        if (bottom_cards.contains(tile.getIdx())) {
+                            int x_bottom = 3 * m.getPosPlayed()[0] + 1;
+                            int y_bottom = 3 * m.getPosPlayed()[1];
+                            double dist = Math.sqrt((x_goal - x_bottom) ^ 2 + (y_goal - y_bottom) ^ 2);
+                            if (min_dist > dist) {
+                                min_dist = dist;
+                                bestMove = m;
+                            }
                         }
                     }
                 }
@@ -172,4 +175,40 @@ public class MyTools {
         }
         return bestMove;
     }
+
+    public boolean checkExistingPath(BoardStateClone bs, SaboteurMove move){
+        boolean existingPath = false;
+        ArrayList<int[]> originTargets = new ArrayList<>();
+
+        //Using card coordinates
+        originTargets.add(new int[]{originPos,originPos}); // coordinate of origin
+        int[] targetPos = new int[]{move.getPosPlayed()[0], move.getPosPlayed()[1]};
+
+        // Check path with card coordinates
+        if (bs.cardPath(originTargets, targetPos, true)) { //checks that there is a cardPath
+
+            // Check 0-1 path
+            ArrayList<int[]> originTargetInt = new ArrayList<>();
+            // origin coordinates in int board
+            originTargetInt.add(new int[]{originPos*3+1, originPos*3+1});
+            originTargetInt.add(new int[]{originPos*3+1, originPos*3+2});
+            originTargetInt.add(new int[]{originPos*3+1, originPos*3});
+            originTargetInt.add(new int[]{originPos*3, originPos*3+1});
+            originTargetInt.add(new int[]{originPos*3+2, originPos*3+1});
+
+            int[] targetPosInt = new int[]{move.getPosPlayed()[0]*3+1, move.getPosPlayed()[1]*3+1};
+
+            // Check path in int board
+            if (bs.cardPath(originTargetInt, targetPosInt, false)) {
+                existingPath =true;
+            }
+
+        }
+        return existingPath;
+    }
+
+
+
+
+
 }

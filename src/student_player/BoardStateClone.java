@@ -156,7 +156,12 @@ public class BoardStateClone extends BoardState{
         return false;
     }
 
-    public Boolean checkOneMoveFromGoal(){
+    public void simulateGame(){
+
+
+
+
+    }    public Boolean checkOneMoveFromGoal(){
         return true;
     }
     public ArrayList<SaboteurTile> getLastCardPlayed(SaboteurTile[][] before, SaboteurTile[][] after){
@@ -800,7 +805,7 @@ public class BoardStateClone extends BoardState{
         return false;
     }
 
-    private Boolean cardPath(ArrayList<int[]> originTargets,int[] targetPos,Boolean usingCard){
+    public Boolean cardPath(ArrayList<int[]> originTargets,int[] targetPos,Boolean usingCard){
         // the search algorithm, usingCard indicate weither we search a path of cards (true) or a path of ones (aka tunnel)(false).
         ArrayList<int[]> queue = new ArrayList<>(); //will store the current neighboring tile. Composed of position (int[]).
         ArrayList<int[]> visited = new ArrayList<int[]>(); //will store the visited tile with an Hash table where the key is the position the board.

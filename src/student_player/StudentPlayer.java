@@ -46,7 +46,7 @@ public class StudentPlayer extends SaboteurPlayer {
         }
 
         //Check if goal is revealed
-        Boolean goalFound = tool.checkGoal(boardState);
+        boolean goalFound = tool.checkGoal(boardState);
 
         //Get player's hand
         ArrayList<SaboteurCard> hand = boardState.getCurrentPlayerCards();
@@ -83,7 +83,7 @@ public class StudentPlayer extends SaboteurPlayer {
             }
         }
 
-        SaboteurMove move = tool.getBestTile(boardState,tool.getGoal());
+        SaboteurMove move = tool.getBestTile(stateClone,tool.getGoal());
         if(move != null && boardState.isLegal(move)) return move;
 
         // Is random the best you can do?
