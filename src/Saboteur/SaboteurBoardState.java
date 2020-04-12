@@ -309,7 +309,7 @@ public class SaboteurBoardState extends BoardState {
                     if(!isAnHiddenObjective) {
                         int[][] path = this.board[i][j].getPath();
                         for (int k = 0; i < 3; i++) {
-                            for (int h = 0; i < 3; i++) {
+                            for (int h = 0; h < 3; h++) {
                                 this.intBoard[i * 3 + k][j * 3 + h] = path[h][2-k];
                             }
                         }
@@ -318,7 +318,8 @@ public class SaboteurBoardState extends BoardState {
             }
         }
 
-        return this.intBoard; }
+        return this.intBoard;
+    }
     public SaboteurTile[][] getHiddenBoard(){
         // returns the board in SaboteurTile format, where the objectives become the 8 tiles.
         // Note the inconsistency with the getHiddenIntBoard where the objectives become only -1

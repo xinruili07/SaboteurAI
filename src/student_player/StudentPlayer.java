@@ -2,15 +2,15 @@ package student_player;
 
 import Saboteur.SaboteurBoard;
 import Saboteur.SaboteurMove;
-import Saboteur.cardClasses.SaboteurBonus;
-import Saboteur.cardClasses.SaboteurCard;
-import Saboteur.cardClasses.SaboteurDrop;
-import Saboteur.cardClasses.SaboteurMap;
+import Saboteur.cardClasses.*;
 import boardgame.BoardState;
 import boardgame.Move;
 
 import Saboteur.SaboteurPlayer;
 import Saboteur.SaboteurBoardState;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 /** A player file submitted by a student. */
 public class StudentPlayer extends SaboteurPlayer {
@@ -49,37 +49,41 @@ public class StudentPlayer extends SaboteurPlayer {
         //Check if goal is revealed
         Boolean goalFound = stateClone.checkGoal();
 
-        for(int i = 0; i < boardState.getCurrentPlayerCards().size(); i++){
-            SaboteurCard card = boardState.getCurrentPlayerCards().get(i);
-            //Check if player has map card then play if goal is not found yet
-            if(card.getName().equals("Map")) {
-                if (!goalFound) {
-                    int y = tool.getRandomGoalPosition();
-                    stateClone.removeCardFromDeck(card);
-                    return new SaboteurMove(card, 12, y, boardState.getTurnPlayer());
-                }
-                else{
-                    Move move = new SaboteurMove(new SaboteurDrop(), i , 0, boardState.getTurnPlayer());
-                    stateClone.removeCardFromDeck(move);
-                    return move;
-                }
+        //Get player's hand
+        ArrayList<SaboteurCard> hand = boardState.getCurrentPlayerCards();
+
+        // Check for Map card
+        if(tool.isCardInHand(hand,"Map")){
+            int card_index = tool.getCardIndexInHand(hand,"Map");
+            SaboteurCard card = boardState.getCurrentPlayerCards().get(card_index);
+            // Play Map card
+            if(!goalFound){
+                int y = tool.getRandomGoalPosition();
+                SaboteurMove move = new SaboteurMove(card, 12, y, boardState.getTurnPlayer());
+                if(boardState.isLegal(move)) return move;
             }
-            //Check if malus is active then play bonus card or drop the worst dead end card
-            else if(boardState.getNbMalus(boardState.getTurnPlayer()) > 0){
-                if(card.getName().equals("Bonus")){
-                    stateClone.removeCardFromDeck(card);
-                    return new SaboteurMove(card,0,0,boardState.getTurnPlayer());
-                }
-                else{
-                    int index = tool.getWorstCard(boardState,"dead_end");
-                    if (index == -1){
-                        index = tool.getWorstCard(boardState,"good_card");
-                    }
-                    stateClone.removeCardFromDeck(boardState.getCurrentPlayerCards().get(i));
-                    return new SaboteurMove(new SaboteurDrop(), index, 0, boardState.getTurnPlayer());
-                }
+            // Drop Map card
+            else{
+                SaboteurMove move = new SaboteurMove(new SaboteurDrop(), card_index, 0, boardState.getTurnPlayer());
+                if(boardState.isLegal(move)) return move;
             }
         }
+
+        // Check if malus is active on the player
+        if(boardState.getNbMalus(boardState.getTurnPlayer()) > 0){
+            // Play Bonus card to heal
+            if(tool.isCardInHand(hand,"Bonus")){
+                int card_index = tool.getCardIndexInHand(hand,"Map");
+                SaboteurCard card = boardState.getCurrentPlayerCards().get(card_index);
+                SaboteurMove move = new SaboteurMove(card,0,0,boardState.getTurnPlayer());
+                if(boardState.isLegal(move)) return move;
+            }
+            // Drop the worst card in hand
+            else{
+
+            }
+        }
+        //card
 
         //Check if opponent is one card from win/from a hidden pos(when not reveal - then play malus
 
@@ -95,9 +99,6 @@ public class StudentPlayer extends SaboteurPlayer {
         // Is random the best you can do?
         Move myMove = boardState.getRandomMove();
         stateClone.setLastMove((SaboteurMove)myMove);
-        System.out.println("MOVE : " + ((SaboteurMove)myMove).getCardPlayed().getName());
-        System.out.println(stateClone.removeCardFromDeck((SaboteurMove)myMove));
-        System.out.println("Size of deck after move : " + stateClone.getDeck().size());
 
 
 //        //Check if move is legal

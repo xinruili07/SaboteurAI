@@ -52,6 +52,7 @@ public class BoardStateClone extends BoardState{
     private boolean[] player2hiddenRevealed = {false,false,false};
 
     private ArrayList<SaboteurCard> Deck; //deck form which player pick
+    private ArrayList<SaboteurCard> SimulationDeck;
     private Map<String,Integer> DeckComposition;
     public static final int[][] hiddenPos = {{originPos+7,originPos-2},{originPos+7,originPos},{originPos+7,originPos+2}};
     protected SaboteurTile[] hiddenCards = new SaboteurTile[3];
@@ -88,12 +89,11 @@ public class BoardStateClone extends BoardState{
         this.player1Cards = boardState.getCurrentPlayerCards();
 
         this.Deck = SaboteurCard.getDeck();
-        System.out.println("Initial size deck " + this.Deck.size());
+        this.SimulationDeck = new ArrayList<SaboteurCard>();
 
         for (SaboteurCard c : this.player1Cards){
             removeCardFromDeck(c);
         }
-        System.out.println("Size deck after first player remove " + this.Deck.size());
 
         //TODO: shuffle so that every player will get at least a forward tile during the game...
         Collections.shuffle(this.Deck);
@@ -102,7 +102,6 @@ public class BoardStateClone extends BoardState{
         for(int i = 0; i < 7; i++){
             this.player2Cards.add(this.Deck.remove(0));
         }
-        System.out.println("Size deck after second player remove " + this.Deck.size());
 
         //initialize deck composition
 //        this.DeckComposition = SaboteurCard.getDeckcomposition();
@@ -124,15 +123,14 @@ public class BoardStateClone extends BoardState{
 
     public void updateState(SaboteurBoardState boardState) {
 
-        ArrayList<SaboteurTile> cardPlayed = getLastCardPlayed(this.board,boardState.getHiddenBoard());
-        for(SaboteurTile c : cardPlayed){
-            System.out.println("Card in temp remaining : " + c.getName());
-            removeCardFromDeck(c);
-        }
+//        ArrayList<SaboteurTile> cardPlayed = getLastCardPlayed(this.board,boardState.getHiddenBoard());
+//        for(SaboteurTile c : cardPlayed){
+//            System.out.println("Card in temp remaining : " + c.getName());
+//            removeCardFromDeck(c);
+//        }
 
         this.board = boardState.getHiddenBoard();
         this.intBoard = boardState.getHiddenIntBoard();
-
 
         this.player1Cards = boardState.getCurrentPlayerCards();
 
@@ -187,6 +185,12 @@ public class BoardStateClone extends BoardState{
         return this.Deck;
     }
 
+    public void updateSimulationDeck(){
+        this.SimulationDeck = new ArrayList<SaboteurCard>();
+        for(int i=0;i<this.Deck.size();i++){
+            this.SimulationDeck.add(i,SaboteurCard.copyACard(this.Deck.get(i).getName()));
+        }
+    }
     public Boolean removeCardFromDeck(Object obj){
         String name="";
         if(obj instanceof SaboteurCard){
@@ -356,7 +360,7 @@ public class BoardStateClone extends BoardState{
                     if(!isAnHiddenObjective) {
                         int[][] path = this.board[i][j].getPath();
                         for (int k = 0; i < 3; i++) {
-                            for (int h = 0; i < 3; i++) {
+                            for (int h = 0; h < 3; h++) {
                                 this.intBoard[i * 3 + k][j * 3 + h] = path[h][2-k];
                             }
                         }
@@ -365,7 +369,8 @@ public class BoardStateClone extends BoardState{
             }
         }
 
-        return this.intBoard; }
+        return this.intBoard;
+    }
 
     public SaboteurTile[][] getHiddenBoard(){
         // returns the board in SaboteurTile format, where the objectives become the 8 tiles.
