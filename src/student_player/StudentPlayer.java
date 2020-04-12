@@ -35,7 +35,6 @@ public class StudentPlayer extends SaboteurPlayer {
         // You probably will make separate functions in MyTools.
         // For example, maybe you'll need to load some pre-processed best opening
         // strategies...
-
         MyTools tool = new MyTools();
 
         //Initialize or update the boardStateClone
@@ -47,7 +46,7 @@ public class StudentPlayer extends SaboteurPlayer {
         }
 
         //Check if goal is revealed
-        Boolean goalFound = stateClone.checkGoal();
+        Boolean goalFound = tool.checkGoal(boardState);
 
         //Get player's hand
         ArrayList<SaboteurCard> hand = boardState.getCurrentPlayerCards();
@@ -83,29 +82,13 @@ public class StudentPlayer extends SaboteurPlayer {
 
             }
         }
-        //card
 
-        //Check if opponent is one card from win/from a hidden pos(when not reveal - then play malus
-
-        //Get all legalMoves
-
-        //Shortest distance algorithm
-        //Check min distance with goal
-
-        //Drop card (dead ends)
-        //Monte Carlo Algorithm
-
+        SaboteurMove move = tool.getBestTile(boardState,tool.getGoal());
+        if(move != null && boardState.isLegal(move)) return move;
 
         // Is random the best you can do?
         Move myMove = boardState.getRandomMove();
         stateClone.setLastMove((SaboteurMove)myMove);
-
-
-//        //Check if move is legal
-//        if (!stateClone.isLegal((SaboteurMove)myMove)) {
-//            System.out.println("Invalid move: " + myMove.toPrettyString());
-//        }
-//        stateClone.processMove((SaboteurMove)myMove);
 
         // Return your move to be processed by the server.
         return myMove;
