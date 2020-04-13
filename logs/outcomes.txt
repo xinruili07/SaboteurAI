@@ -11,3 +11,4 @@
 14,260870605,Human,1,Human,42,game00014.log,
 15,260870605,Human,1,Human,54,game00015.log,
 16,260870605,Human,0,260870605,37,game00016.log,
+22,260870605,Human,1,Human,30,game00022.log,

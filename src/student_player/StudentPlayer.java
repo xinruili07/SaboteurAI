@@ -43,12 +43,6 @@ public class StudentPlayer extends SaboteurPlayer {
         }
         stateClone.updateState(boardState);
         stateClone.checkGoal();
-        //stateClone = new BoardStateClone(stateClone);
-        /*
-        else {
-            stateClone.updateState(boardState);
-        }
-        */
 
         //Check if goal is revealed
         Boolean goalFound = tool.checkGoal(boardState);
@@ -110,8 +104,6 @@ public class StudentPlayer extends SaboteurPlayer {
 		player.setRootState(stateClone);
 		nextMove = player.run();
         
-        
-        // Object[] results = miniMax(3, clonedState, Integer.MIN_VALUE, Integer.MAX_VALUE, player_id);
         if (boardState.isLegal((SaboteurMove) nextMove)) {
         	System.out.println("using MCTS : "+nextMove.getCardPlayed().getName());
         	return nextMove;
@@ -136,56 +128,4 @@ public class StudentPlayer extends SaboteurPlayer {
         // Is random the best you can do?
     }
     
-    // Minimax attempt, unable to get good evaluation function
-    /*
-    private Object[] miniMax(int depth, BoardStateClone boardState, int alpha, int beta, int playerId) {
-		Object[] newObject = new Object[2];
-		int score = 0;
-		int opponentId = 1 - playerId;
-		Move chosenMove = boardState.getRandomMove();
-		
-		if (boardState.gameOver()) {
-			if (boardState.getWinner() == playerId) {
-				score = 500;
-			}
-			else if (boardState.getWinner() == (playerId == 1 ? 0: 1)) {
-				score = -500;
-			}
-			else {
-				score = 0;
-			}
-		}
-		
-		else {
-			ArrayList<SaboteurMove> moves = boardState.getAllLegalMoves();
-			for (SaboteurMove move: moves) {
-				BoardStateClone clonedState = new BoardStateClone(boardState);
-				clonedState.processMove(move);
-				
-				if (playerId == player_id) {
-					score = (int) miniMax(depth - 1, clonedState, alpha, beta, opponentId)[0];
-					if (score > alpha) {
-						alpha = score;
-						chosenMove = move;
-					}
-				}
-				else {
-					score = (int) miniMax(depth - 1, clonedState, alpha, beta, playerId)[0];
-					if (score < beta) {
-						beta = score;
-						chosenMove = move;
-					}
-				}
-				if (alpha > beta) {
-					break;
-				}
-			}
-		}
-		// Returns random move for now
-		newObject[0] = score;
-		newObject[1] = chosenMove;
-		return newObject;
-	}
-    */
-    // private int evaluate()
 }
