@@ -8,5 +8,5 @@
 
 #Ignore intellij build files
 .idea
-
 SaboteurAI.iml
+out
