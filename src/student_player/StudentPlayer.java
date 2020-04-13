@@ -1,5 +1,6 @@
 package student_player;
 
+import Saboteur.cardClasses.SaboteurDestroy;
 import boardgame.Move;
 
 import Saboteur.SaboteurPlayer;
@@ -7,6 +8,7 @@ import Saboteur.cardClasses.SaboteurCard;
 import Saboteur.cardClasses.SaboteurDrop;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import Saboteur.SaboteurBoardState;
 import Saboteur.SaboteurMove;
@@ -39,8 +41,9 @@ public class StudentPlayer extends SaboteurPlayer {
         if(stateClone == null){
             stateClone = new BoardStateClone((boardState));
         }
-        
-        stateClone = new BoardStateClone(stateClone);
+        stateClone.updateState(boardState);
+        stateClone.checkGoal();
+        //stateClone = new BoardStateClone(stateClone);
         /*
         else {
             stateClone.updateState(boardState);
@@ -74,16 +77,34 @@ public class StudentPlayer extends SaboteurPlayer {
         if(boardState.getNbMalus(boardState.getTurnPlayer()) > 0){
             // Play Bonus card to heal
             if(tool.isCardInHand(hand,"Bonus")){
-                int card_index = tool.getCardIndexInHand(hand,"Map");
+                int card_index = tool.getCardIndexInHand(hand,"Bonus");
                 SaboteurCard card = boardState.getCurrentPlayerCards().get(card_index);
                 SaboteurMove move = new SaboteurMove(card,0,0,boardState.getTurnPlayer());
                 if(boardState.isLegal(move)) return move;
             }
             // Drop the worst card in hand
             else{
-
+                if(tool.hasDeadEndCards(hand)){
+                    SaboteurMove move = new SaboteurMove(new SaboteurDrop(), tool.getWorstDeadEnd(boardState), 0, boardState.getTurnPlayer());
+                    if(boardState.isLegal(move)) return move;
+                }
+                else{
+                    Random startRand = new Random();
+                    int idx = startRand.nextInt(hand.size());
+                    SaboteurMove move = new SaboteurMove(new SaboteurDrop(), idx, 0, boardState.getTurnPlayer());
+                    if(boardState.isLegal(move)) return move;
+                }
             }
         }
+
+        if(tool.isCardInHand(hand,"Destroy")){
+            if(tool.hasDeadEndCardsToDestroy(boardState)){
+                int[]cardPos = tool.getDeadEndCardToDestroy(boardState);
+                SaboteurMove move = new SaboteurMove(new SaboteurDestroy(), cardPos[0], cardPos[1], boardState.getTurnPlayer());
+                if(boardState.isLegal(move)) return move;
+            }
+        }
+
 		ISMCTS player = new ISMCTS(this.stateClone, 2000, boardState.getTurnPlayer());
 		SaboteurMove nextMove;
 		player.setRootState(stateClone);
@@ -92,7 +113,7 @@ public class StudentPlayer extends SaboteurPlayer {
         
         // Object[] results = miniMax(3, clonedState, Integer.MIN_VALUE, Integer.MAX_VALUE, player_id);
         if (boardState.isLegal((SaboteurMove) nextMove)) {
-        	System.out.println("using MCTS");
+        	System.out.println("using MCTS : "+nextMove.getCardPlayed().getName());
         	return nextMove;
         }
         else {
@@ -106,6 +127,7 @@ public class StudentPlayer extends SaboteurPlayer {
         // Is random the best you can do?
         System.out.println("Random");
         Move myMove = boardState.getRandomMove();
+
         stateClone.setLastMove((SaboteurMove)myMove);
 
         // Return your move to be processed by the server.

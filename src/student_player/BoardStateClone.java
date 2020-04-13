@@ -96,7 +96,6 @@ public class BoardStateClone extends BoardState{
             this.hiddenCards[i] = this.board[hiddenPos[i][0]][hiddenPos[i][1]];
         }
 
-
         // Initialize the deck
         this.player1Cards = boardState.getCurrentPlayerCards();
 
@@ -135,7 +134,7 @@ public class BoardStateClone extends BoardState{
     
     public BoardStateClone(BoardStateClone boardState) {
         this.board = boardState.getHiddenBoard();
-        // this.intBoard = boardState.getHiddenIntBoard();
+        this.intBoard = boardState.getHiddenIntBoard();
 
         this.player1Cards = boardState.getPlayer1Cards();
         this.player2Cards = boardState.getPlayer2Cards();
@@ -160,7 +159,6 @@ public class BoardStateClone extends BoardState{
 //            System.out.println("Card in temp remaining : " + c.getName());
 //            removeCardFromDeck(c);
 //        }
-
         this.board = boardState.getHiddenBoard();
         this.intBoard = boardState.getHiddenIntBoard();
 
@@ -176,7 +174,7 @@ public class BoardStateClone extends BoardState{
         turnNumber = boardState.getTurnNumber();
     }
 
-    public Boolean checkGoal(){
+    public boolean checkGoal(){
         for(int i = 0; i < 3; i++){
             SaboteurTile tile = this.board[hiddenPos[i][0]][hiddenPos[i][1]];
             if(tile.getIdx() == "nugget"){
@@ -519,6 +517,25 @@ public class BoardStateClone extends BoardState{
             }
         }
         return possiblePos;
+    }
+    public ArrayList<SaboteurMove> getAllLegalMoves1(){
+        ArrayList<SaboteurMove> list = new ArrayList<>();
+        ArrayList<String> dead_end_cards = new ArrayList<>(Arrays.asList("1","2","2_flip","3","3_flip","11","11_flip","13","14","14_flip","15"));
+        ArrayList<String> special_cards = new ArrayList<>(Arrays.asList("Map","Malus","Bonus","Destroy","Drop"));
+        for(SaboteurMove m : getAllLegalMoves1()){
+            if(special_cards.contains(m.getCardPlayed().getName())){
+                list.add(m);
+            }
+            else if(m.getCardPlayed() instanceof SaboteurTile){
+                // a card played under the origin and not a dead end card
+                if (m.getPosPlayed()[0] > originPos && !dead_end_cards.contains(((SaboteurTile) m.getCardPlayed()).getIdx())){
+                    list.add(m);
+                }
+            }
+
+
+        }
+         return list;
     }
 
     public ArrayList<SaboteurMove> getAllLegalMoves() {

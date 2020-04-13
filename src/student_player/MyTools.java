@@ -91,6 +91,14 @@ public class MyTools {
         return false;
     }
 
+    public boolean hasDeadEndCards(ArrayList<SaboteurCard>hand){
+        for (SaboteurCard c : hand){
+            if(dead_end_cards.contains(c.getName())){
+                return true;
+            }
+        }
+        return false;
+    }
     public int getWorstDeadEnd(SaboteurBoardState bs){
         int index = -1;
         int min_value = Integer.MAX_VALUE;
@@ -118,7 +126,33 @@ public class MyTools {
         return index;
     }
 
+    public boolean hasDeadEndCardsToDestroy(SaboteurBoardState bs){
+        SaboteurTile[][] board = bs.getHiddenBoard();
+        for(int i= originPos+1; i < originPos+7; i++){
+            for(int j = 0; j < BOARD_SIZE; j++){
+                if(board[i][j] != null) {
+                    if (dead_end_cards.contains(board[i][j].getIdx())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
+    public int[] getDeadEndCardToDestroy(SaboteurBoardState bs){
+        SaboteurTile[][] board = bs.getHiddenBoard();
+        for(int i= originPos+1; i < originPos+7; i++){
+            for(int j = 0; j < BOARD_SIZE; j++){
+                if(board[i][j] != null) {
+                    if(dead_end_cards.contains(board[i][j].getIdx())) {
+                        return new int[]{i, j};
+                    }
+                }
+            }
+        }
+        return null;
+    }
     public SaboteurMove getBestTile(SaboteurBoardState bs, int[] goal){
         ArrayList<SaboteurMove> moves = bs.getAllLegalMoves();
         SaboteurMove bestMove = null;
