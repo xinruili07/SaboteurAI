@@ -98,24 +98,28 @@ public class StudentPlayer extends SaboteurPlayer {
                 if(boardState.isLegal(move)) return move;
             }
         }
-
-		ISMCTS player = new ISMCTS(this.stateClone, 2000, boardState.getTurnPlayer());
+        
+        BoardStateClone MCTSstate = new BoardStateClone(this.stateClone);
+		ISMCTS player = new ISMCTS(MCTSstate, 2000, boardState.getTurnPlayer());
 		SaboteurMove nextMove;
-		player.setRootState(stateClone);
+		player.setRootState(MCTSstate);
 		nextMove = player.run();
         
-        if (boardState.isLegal((SaboteurMove) nextMove)) {
+        if (boardState.isLegal(nextMove)) {
         	System.out.println("using MCTS : "+nextMove.getCardPlayed().getName());
         	return nextMove;
         }
-        else {
-        	SaboteurMove move = tool.getBestTile(boardState,tool.getGoal());
-            if (move != null && boardState.isLegal(move)) {
-            	System.out.println("using shortest path");
-            	return move;
-            }
+    	SaboteurMove move = tool.getBestTile(boardState,tool.getGoal());
+        if (move != null && boardState.isLegal(move)) {
+        	System.out.println("using shortest path");
+        	return move;
         }
-
+        
+        if(tool.hasDeadEndCards(hand)){
+            SaboteurMove dropMove = new SaboteurMove(new SaboteurDrop(), tool.getWorstDeadEnd(boardState), 0, boardState.getTurnPlayer());
+            if(boardState.isLegal(dropMove)) return dropMove;
+        }
+        
         // Is random the best you can do?
         System.out.println("Random");
         Move myMove = boardState.getRandomMove();
