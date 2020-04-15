@@ -95,7 +95,6 @@ public class MyTools {
     	
     	
     	int[] movePos = move.getPosPlayed();
-    	// System.out.println(Arrays.toString(movePos));
     	int[][] moves = {{0, -1},{0, 1},{1, 0},{-1, 0}};
         int i = movePos[0];
         int j = movePos[1];
@@ -104,13 +103,8 @@ public class MyTools {
         for (int m = 0; m < 4; m++) {
             if (0 <= i+moves[m][0] && i+moves[m][0] < BOARD_SIZE && 0 <= j+moves[m][1] && j+moves[m][1] < BOARD_SIZE) { //if the hypothetical neighbor is still inside the board
                 int[] neighborPos = new int[]{i+moves[m][0],j+moves[m][1]};
-                System.out.println(Arrays.toString(neighborPos));
-                System.out.println(boardState[neighborPos[0]][neighborPos[1]]);
                 if(boardState[neighborPos[0]][neighborPos[1]] != null) neighbors.add(neighborPos);
             }
-        }
-        for (int [] neighbor : neighbors) {
-        	System.out.println(neighbors);
         }
         
         for (int[] neighbor : neighbors) {
