@@ -88,6 +88,41 @@ public class MyTools {
         }
         return false;
     }
+    
+    public boolean checkPathBetweenOriginAndCard(SaboteurMove move, SaboteurTile[][] boardState) {
+    	int[] originPosition = {originPos, originPos};
+    	ArrayList<int[]> origin = new ArrayList<>(Arrays.asList(originPosition));
+    	
+    	
+    	int[] movePos = move.getPosPlayed();
+    	// System.out.println(Arrays.toString(movePos));
+    	int[][] moves = {{0, -1},{0, 1},{1, 0},{-1, 0}};
+        int i = movePos[0];
+        int j = movePos[1];
+        ArrayList<int[]> neighbors = new ArrayList<>();
+        
+        for (int m = 0; m < 4; m++) {
+            if (0 <= i+moves[m][0] && i+moves[m][0] < BOARD_SIZE && 0 <= j+moves[m][1] && j+moves[m][1] < BOARD_SIZE) { //if the hypothetical neighbor is still inside the board
+                int[] neighborPos = new int[]{i+moves[m][0],j+moves[m][1]};
+                System.out.println(Arrays.toString(neighborPos));
+                System.out.println(boardState[neighborPos[0]][neighborPos[1]]);
+                if(boardState[neighborPos[0]][neighborPos[1]] != null) neighbors.add(neighborPos);
+            }
+        }
+        for (int [] neighbor : neighbors) {
+        	System.out.println(neighbors);
+        }
+        
+        for (int[] neighbor : neighbors) {
+	    	if (checkPath(boardState, origin, neighbor)) {
+	    		System.out.println("Connected to origin!");
+	    		return true;
+	    	}
+        }
+    	System.out.println("Not connected to origin!");
+    	return false;
+    }
+    
     public int getWorstDeadEnd(SaboteurBoardState bs){
         int index = -1;
         int min_value = Integer.MAX_VALUE;
@@ -145,7 +180,7 @@ public class MyTools {
     public SaboteurMove getBestTile(SaboteurBoardState bs, int[] goal){
         ArrayList<SaboteurMove> moves = bs.getAllLegalMoves();
         SaboteurMove bestMove = null;
-        double min_dist = 0.0;
+        double min_dist = Integer.MAX_VALUE;
         int[][]intBoard = bs.getHiddenIntBoard();
 
         int x_goal = 3 * goal[0] + 1;
@@ -197,5 +232,53 @@ public class MyTools {
 
         }
         return bestMove;
+    }
+    
+    // Methods from board state clone
+    private static Boolean checkPath(SaboteurTile[][] hiddenBoard, ArrayList<int[]> origin, int[] movePosition){ //theBoardMap,point,entrance
+        // the search algorithm, usingCard indicate whether we search a path of cards (true) or a path of ones (aka tunnel)(false).
+        ArrayList<int[]> queue = new ArrayList<>(); //will store the current neighboring tile. Composed of position (int[]).
+        ArrayList<int[]> visited = new ArrayList<int[]>(); //will store the visited tile with an Hash table where the key is the position the board.
+        visited.add(movePosition);
+        addUnvisitedNeighborToQueue(hiddenBoard, movePosition, queue,visited, BOARD_SIZE);
+        while(queue.size()>0){
+            int[] visitingPos = queue.remove(0);
+            if(containsIntArray(origin,visitingPos)){
+                return true;
+            }
+            visited.add(visitingPos);
+            addUnvisitedNeighborToQueue(hiddenBoard, visitingPos, queue,visited, BOARD_SIZE);
+            System.out.println(queue.size());
+        }
+        return false;
+    }
+      
+      
+      private static void addUnvisitedNeighborToQueue(SaboteurTile[][] hiddenBoard, int[] pos, ArrayList<int[]> queue, ArrayList<int[]> visited,int maxSize){
+        int[][] moves = {{0, -1},{0, 1},{1, 0},{-1, 0}};
+        int i = pos[0];
+        int j = pos[1];
+        for (int m = 0; m < 4; m++) {
+            if (0 <= i+moves[m][0] && i+moves[m][0] < maxSize && 0 <= j+moves[m][1] && j+moves[m][1] < maxSize) { //if the hypothetical neighbor is still inside the board
+                int[] neighborPos = new int[]{i+moves[m][0],j+moves[m][1]};
+                if(!containsIntArray(visited,neighborPos)){
+                    if(hiddenBoard[neighborPos[0]][neighborPos[1]] != null) queue.add(neighborPos);
+                }
+            }
+        }
+    }
+      private static boolean containsIntArray(ArrayList<int[]> a,int[] o){ //the .equals used in Arraylist.contains is not working between arrays..
+        if (o == null) {
+            for (int i = 0; i < a.size(); i++) {
+                if (a.get(i) == null)
+                    return true;
+            }
+        } else {
+            for (int i = 0; i < a.size(); i++) {
+                if (Arrays.equals(o, a.get(i)))
+                    return true;
+            }
+        }
+        return false;
     }
 }

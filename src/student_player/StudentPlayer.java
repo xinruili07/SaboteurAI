@@ -99,31 +99,34 @@ public class StudentPlayer extends SaboteurPlayer {
             }
         }
         
+		SaboteurMove move = tool.getBestTile(boardState,tool.getGoal());
+        if (move != null && boardState.isLegal(move)) {
+        	System.out.println("using shortest path");
+        	tool.checkPathBetweenOriginAndCard(move, boardState.getHiddenBoard());
+        	return move;
+        }
+        
         BoardStateClone MCTSstate = new BoardStateClone(this.stateClone);
 		ISMCTS player = new ISMCTS(MCTSstate, 2000, boardState.getTurnPlayer());
 		SaboteurMove nextMove;
 		player.setRootState(MCTSstate);
 		nextMove = player.run();
-        
+		
         if (boardState.isLegal(nextMove)) {
         	System.out.println("using MCTS : "+nextMove.getCardPlayed().getName());
         	return nextMove;
         }
-    	SaboteurMove move = tool.getBestTile(boardState,tool.getGoal());
-        if (move != null && boardState.isLegal(move)) {
-        	System.out.println("using shortest path");
-        	return move;
-        }
         
         if(tool.hasDeadEndCards(hand)){
             SaboteurMove dropMove = new SaboteurMove(new SaboteurDrop(), tool.getWorstDeadEnd(boardState), 0, boardState.getTurnPlayer());
+            System.out.println("Drop worst card");
             if(boardState.isLegal(dropMove)) return dropMove;
         }
         
         // Is random the best you can do?
         System.out.println("Random");
-        Move myMove = boardState.getRandomMove();
-
+        SaboteurMove myMove = boardState.getRandomMove();
+        tool.checkPathBetweenOriginAndCard(myMove, boardState.getHiddenBoard());
         stateClone.setLastMove((SaboteurMove)myMove);
 
         // Return your move to be processed by the server.

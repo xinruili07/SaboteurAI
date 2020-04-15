@@ -896,7 +896,7 @@ public class BoardStateClone extends BoardState{
             To verify a path, we use a simple search algorithm where we propagate a front of visited neighbor.
                TODO To speed up: The neighbor are added ranked on their distance to the origin... (simply use a PriorityQueue with a Comparator)
         */
-        // this.getHiddenIntBoard(); //update the int board.
+        this.getHiddenIntBoard(); //update the int board.
         boolean atLeastOnefound = false;
         for(SaboteurTile target : objectives){
             ArrayList<int[]> originTargets = new ArrayList<>();
