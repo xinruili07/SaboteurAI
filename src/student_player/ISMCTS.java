@@ -50,7 +50,7 @@ public class ISMCTS {
         for (int i = 0; i < limit; i++) {
             this.currentNode = rootNode;
             
-            // 1. Clone and determinize the state of the game (randomize information unknown to the AI)
+            // 1. Clone and determine the state of the game (randomize information unknown to the AI)
             this.currentState = new BoardStateClone(rootState);
             
             this.possibleMoves = this.currentState.getAllLegalMoves();
