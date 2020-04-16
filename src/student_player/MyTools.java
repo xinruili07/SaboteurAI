@@ -109,11 +109,11 @@ public class MyTools {
         
         for (int[] neighbor : neighbors) {
 	    	if (checkPath(boardState, origin, neighbor)) {
-	    		System.out.println("Connected to origin!");
+	    		// System.out.println("Connected to origin!");
 	    		return true;
 	    	}
         }
-    	System.out.println("Not connected to origin!");
+    	// System.out.println("Not connected to origin!");
     	return false;
     }
     
@@ -183,44 +183,46 @@ public class MyTools {
         // Best moves are using connectors tiles
         for(SaboteurMove m : moves){
             if(m.getCardPlayed() instanceof SaboteurTile){
-                SaboteurTile tile = (SaboteurTile) m.getCardPlayed();
-                if(connectors.contains(tile.getIdx())){
-                    if(left_cards.contains(tile.getIdx())){
-                        int x_left = 3 * m.getPosPlayed()[0];
-                        int y_left = 3 * m.getPosPlayed()[1] + 1;
-                        double dist = Math.sqrt((x_goal - x_left)^2 + (y_goal - y_left)^2);
-                        if(min_dist > dist){
-                            min_dist = dist;
-                            bestMove = m;
-                        }
-                    }
-                    if(right_cards.contains(tile.getIdx())){
-                        int x_right = 3 * m.getPosPlayed()[0] + 2;
-                        int y_right = 3 * m.getPosPlayed()[1] + 1;
-                        double dist = Math.sqrt((x_goal - x_right)^2 + (y_goal - y_right)^2);
-                        if(min_dist > dist){
-                            min_dist = dist;
-                            bestMove = m;
-                        }
-                    }
-                    if(top_cards.contains(tile.getIdx())){
-                        int x_top = 3 * m.getPosPlayed()[0] + 1;
-                        int y_top = 3 * m.getPosPlayed()[1] + 2;
-                        double dist = Math.sqrt((x_goal - x_top)^2 + (y_goal - y_top)^2);
-                        if(min_dist > dist){
-                            min_dist = dist;
-                            bestMove = m;
-                        }
-                    }
-                    if(bottom_cards.contains(tile.getIdx())){
-                        int x_bottom = 3 * m.getPosPlayed()[0] + 1;
-                        int y_bottom = 3 * m.getPosPlayed()[1];
-                        double dist = Math.sqrt((x_goal - x_bottom)^2 + (y_goal - y_bottom)^2);
-                        if(min_dist > dist){
-                            min_dist = dist;
-                            bestMove = m;
-                        }
-                    }
+            	if (checkPathBetweenOriginAndCard(m, bs.getHiddenBoard())) {
+	                SaboteurTile tile = (SaboteurTile) m.getCardPlayed();
+	                if(connectors.contains(tile.getIdx())){
+	                    if(left_cards.contains(tile.getIdx())){
+	                        int x_left = 3 * m.getPosPlayed()[0];
+	                        int y_left = 3 * m.getPosPlayed()[1] + 1;
+	                        double dist = Math.sqrt((x_goal - x_left)^2 + (y_goal - y_left)^2);
+	                        if(min_dist > dist){
+	                            min_dist = dist;
+	                            bestMove = m;
+	                        }
+	                    }
+	                    if(right_cards.contains(tile.getIdx())){
+	                        int x_right = 3 * m.getPosPlayed()[0] + 2;
+	                        int y_right = 3 * m.getPosPlayed()[1] + 1;
+	                        double dist = Math.sqrt((x_goal - x_right)^2 + (y_goal - y_right)^2);
+	                        if(min_dist > dist){
+	                            min_dist = dist;
+	                            bestMove = m;
+	                        }
+	                    }
+	                    if(top_cards.contains(tile.getIdx())){
+	                        int x_top = 3 * m.getPosPlayed()[0] + 1;
+	                        int y_top = 3 * m.getPosPlayed()[1] + 2;
+	                        double dist = Math.sqrt((x_goal - x_top)^2 + (y_goal - y_top)^2);
+	                        if(min_dist > dist){
+	                            min_dist = dist;
+	                            bestMove = m;
+	                        }
+	                    }
+	                    if(bottom_cards.contains(tile.getIdx())){
+	                        int x_bottom = 3 * m.getPosPlayed()[0] + 1;
+	                        int y_bottom = 3 * m.getPosPlayed()[1];
+	                        double dist = Math.sqrt((x_goal - x_bottom)^2 + (y_goal - y_bottom)^2);
+	                        if(min_dist > dist){
+	                            min_dist = dist;
+	                            bestMove = m;
+	                        }
+	                    }
+	                }
                 }
             }
 
@@ -229,7 +231,7 @@ public class MyTools {
     }
     
     // Methods from board state clone
-    private static Boolean checkPath(SaboteurTile[][] hiddenBoard, ArrayList<int[]> origin, int[] movePosition){ //theBoardMap,point,entrance
+    private Boolean checkPath(SaboteurTile[][] hiddenBoard, ArrayList<int[]> origin, int[] movePosition){ //theBoardMap,point,entrance
         // the search algorithm, usingCard indicate whether we search a path of cards (true) or a path of ones (aka tunnel)(false).
         ArrayList<int[]> queue = new ArrayList<>(); //will store the current neighboring tile. Composed of position (int[]).
         ArrayList<int[]> visited = new ArrayList<int[]>(); //will store the visited tile with an Hash table where the key is the position the board.
@@ -248,7 +250,7 @@ public class MyTools {
     }
       
       
-      private static void addUnvisitedNeighborToQueue(SaboteurTile[][] hiddenBoard, int[] pos, ArrayList<int[]> queue, ArrayList<int[]> visited,int maxSize){
+      private void addUnvisitedNeighborToQueue(SaboteurTile[][] hiddenBoard, int[] pos, ArrayList<int[]> queue, ArrayList<int[]> visited,int maxSize){
         int[][] moves = {{0, -1},{0, 1},{1, 0},{-1, 0}};
         int i = pos[0];
         int j = pos[1];
@@ -256,12 +258,12 @@ public class MyTools {
             if (0 <= i+moves[m][0] && i+moves[m][0] < maxSize && 0 <= j+moves[m][1] && j+moves[m][1] < maxSize) { //if the hypothetical neighbor is still inside the board
                 int[] neighborPos = new int[]{i+moves[m][0],j+moves[m][1]};
                 if(!containsIntArray(visited,neighborPos)){
-                    if(hiddenBoard[neighborPos[0]][neighborPos[1]] != null) queue.add(neighborPos);
+                    if(hiddenBoard[neighborPos[0]][neighborPos[1]] != null && !dead_end_cards.contains(hiddenBoard[neighborPos[0]][neighborPos[1]].getIdx())) queue.add(neighborPos);
                 }
             }
         }
     }
-      private static boolean containsIntArray(ArrayList<int[]> a,int[] o){ //the .equals used in Arraylist.contains is not working between arrays..
+      private boolean containsIntArray(ArrayList<int[]> a,int[] o){ //the .equals used in Arraylist.contains is not working between arrays..
         if (o == null) {
             for (int i = 0; i < a.size(); i++) {
                 if (a.get(i) == null)
