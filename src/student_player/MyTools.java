@@ -133,6 +133,19 @@ public class MyTools{
         return null;
     }
 
+    public int[] findDeadEndCard(SaboteurBoardState bs){
+        SaboteurTile[][] board = bs.getHiddenBoard();
+        for(int i = 12; i > originPos; i--){
+            for(int j = 2; j <= 8; j++){
+                if(board[i][j] != null){
+                    if(dead_end_cards.contains(board[i][j].getIdx())){
+                        return new int[]{i,j};
+                    }
+                }
+            }
+        }
+        return null;
+    }
     private ArrayList<SaboteurMove> getGoodTileMoves(SaboteurBoardState bs){
         ArrayList<SaboteurMove> allGoodMoves = new ArrayList<>();
         for(SaboteurMove move : bs.getAllLegalMoves()){
@@ -158,13 +171,6 @@ public class MyTools{
         // Best moves are using connectors tiles
         for(SaboteurMove m : goodTileMoves) {
             if (m.getCardPlayed() instanceof SaboteurTile) {
-            	/*
-            	BoardStateClone stateClone = new BoardStateClone(bs);
-            	if (winningMove(m, stateClone) && bs.isLegal(m)) {
-            		System.out.println("Winning move");
-            		return m;
-            	}
-            	*/
                 if (checkExistingPath(bs, m)) {
                     SaboteurTile tile = (SaboteurTile) m.getCardPlayed();
                     if (connectors.contains(tile.getIdx())) {

@@ -1,14 +1,9 @@
 package student_player;
 
-import Saboteur.cardClasses.SaboteurDestroy;
 import boardgame.Move;
-
 import Saboteur.SaboteurPlayer;
 import Saboteur.cardClasses.SaboteurCard;
-import Saboteur.cardClasses.SaboteurDrop;
-
 import java.util.ArrayList;
-import java.util.Random;
 
 import Saboteur.SaboteurBoardState;
 import Saboteur.SaboteurMove;
@@ -52,6 +47,7 @@ public class StudentPlayer extends SaboteurPlayer {
 
         // Check if malus is active on the player
         SaboteurMove move;
+
         if(isMalusActive > 0){
             // Play Bonus card to heal
             move = tool.playBonusCard(boardState);
@@ -87,6 +83,10 @@ public class StudentPlayer extends SaboteurPlayer {
             }
 
             // Destroy dead ends card
+            if(tool.findDeadEndCard(boardState) != null){
+                move = tool.destroyCard(boardState,tool.findDeadEndCard(boardState));
+                if(move != null && boardState.isLegal(move)) return move;
+            }
 
             //Choose best tile at row 12
             if(tool.getDepth(boardState) == 12){
@@ -100,6 +100,7 @@ public class StudentPlayer extends SaboteurPlayer {
 
             move = tool.getBestTile(boardState);
             if (move != null && boardState.isLegal(move)) return move;
+
             // Drop worst card
             move = tool.dropMostUselessCard(boardState);
             if(move != null && boardState.isLegal(move)) return move;
