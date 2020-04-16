@@ -9,7 +9,7 @@ import Saboteur.cardClasses.SaboteurTile;
 import java.util.*;
 
 
-public class MyTools {
+public class MyTools2{
 
     public static final int BOARD_SIZE = 14;
     public static final int originPos = 5;
@@ -32,7 +32,7 @@ public class MyTools {
     
     public static final int[][] hiddenPos = {{originPos+7,originPos-2},{originPos+7,originPos},{originPos+7,originPos+2}};
 
-    public MyTools() {
+    public MyTools2() {
         y_goal = new ArrayList<Integer>();
         y_goal.add(originPos - 2);
         y_goal.add(originPos);
