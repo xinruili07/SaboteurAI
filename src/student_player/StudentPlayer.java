@@ -36,6 +36,7 @@ public class StudentPlayer extends SaboteurPlayer {
         // For example, maybe you'll need to load some pre-processed best opening
         // strategies...
     	MyTools tool = new MyTools();
+        //MyTools1 tool = new MyTools1();
 
         //Initialize or update the boardStateClone
         if(stateClone == null){
