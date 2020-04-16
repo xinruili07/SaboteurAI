@@ -44,67 +44,115 @@ public class StudentPlayer extends SaboteurPlayer {
         stateClone.updateState(boardState);
         stateClone.checkGoal();
 
-        //Check if goal is revealed
-        Boolean goalFound = tool.checkGoal(boardState);
+        boolean goalFound = tool.checkGoal(boardState);
+        int isMalusActive = boardState.getNbMalus(boardState.getTurnPlayer());
 
         //Get player's hand
         ArrayList<SaboteurCard> hand = boardState.getCurrentPlayerCards();
 
-        // Check for Map card
-        if(tool.isCardInHand(hand,"Map")){
-            int card_index = tool.getCardIndexInHand(hand,"Map");
-            SaboteurCard card = boardState.getCurrentPlayerCards().get(card_index);
-            // Play Map card
-            if(!goalFound){
-                int y = tool.getRandomGoalPosition();
-                SaboteurMove move = new SaboteurMove(card, 12, y, boardState.getTurnPlayer());
-                if(boardState.isLegal(move)) return move;
-            }
-            // Drop Map card
-            else{
-                SaboteurMove move = new SaboteurMove(new SaboteurDrop(), card_index, 0, boardState.getTurnPlayer());
-                if(boardState.isLegal(move)) return move;
-            }
-        }
-
         // Check if malus is active on the player
-        if(boardState.getNbMalus(boardState.getTurnPlayer()) > 0){
+        SaboteurMove move;
+        if(isMalusActive > 0){
+
             // Play Bonus card to heal
-            if(tool.isCardInHand(hand,"Bonus")){
-                int card_index = tool.getCardIndexInHand(hand,"Bonus");
-                SaboteurCard card = boardState.getCurrentPlayerCards().get(card_index);
-                SaboteurMove move = new SaboteurMove(card,0,0,boardState.getTurnPlayer());
-                if(boardState.isLegal(move)) return move;
+            move = tool.playBonusCard(boardState);
+            if(move != null && boardState.isLegal(move)) return move;
+
+            //Play Malus card if in danger zone (row 10)
+            if(tool.isInDangerZone(boardState)){
+                move = tool.playMalusCard(boardState);
+                if(move != null && boardState.isLegal(move)) return move;
             }
-            // Drop the worst card in hand
-            else{
-                if(tool.hasDeadEndCards(hand)){
-                    SaboteurMove move = new SaboteurMove(new SaboteurDrop(), tool.getWorstDeadEnd(boardState), 0, boardState.getTurnPlayer());
-                    if(boardState.isLegal(move)) return move;
-                }
-                else{
-                    Random startRand = new Random();
-                    int idx = startRand.nextInt(hand.size());
-                    SaboteurMove move = new SaboteurMove(new SaboteurDrop(), idx, 0, boardState.getTurnPlayer());
-                    if(boardState.isLegal(move)) return move;
-                }
+
+            // Play Map card if goal not found
+            if(!goalFound){
+                move = tool.playMapCard(boardState);
+                if(move != null && boardState.isLegal(move)) return move;
             }
+            // Drop worst card
+            move = tool.dropMostUselessCard(boardState);
+            if(move != null && boardState.isLegal(move)) return move;
+
+        }
+        else {
+            // Check for Map card
+            if (!goalFound) {
+                move = tool.playMapCard(boardState);
+                if (move != null && boardState.isLegal(move)) return move;
+            }
+
+            //Play Malus card if in danger zone
+            if(tool.isInDangerZone(boardState)){
+                move = tool.playMalusCard(boardState);
+                if(move != null && boardState.isLegal(move)) return move;
+            }
+
+            // Destroy dead ends card
+
+            //Choose best tile
+            move = tool.getBestTile(boardState);
+            if(move != null && boardState.isLegal(move)) return move;
+
+            // Drop worst card
+            move = tool.dropMostUselessCard(boardState);
+            if(move != null && boardState.isLegal(move)) return move;
         }
 
-        if(tool.isCardInHand(hand,"Destroy")){
-            if(tool.hasDeadEndCardsToDestroy(boardState)){
-                int[]cardPos = tool.getDeadEndCardToDestroy(boardState);
-                SaboteurMove move = new SaboteurMove(new SaboteurDestroy(), cardPos[0], cardPos[1], boardState.getTurnPlayer());
-                if(boardState.isLegal(move)) return move;
-            }
-        }
-        
-		SaboteurMove move = tool.getBestTile(boardState,tool.getGoal());
-        if (move != null && boardState.isLegal(move)) {
-        	System.out.println("using shortest path");
-        	System.out.println(tool.checkPathBetweenOriginAndCard(move, boardState.getHiddenBoard()));
-        	return move;
-        }
+//        // Check for Map card
+//        if(tool.isCardInHand(hand,"Map")){
+//            int card_index = tool.getCardIndexInHand(hand,"Map");
+//            SaboteurCard card = boardState.getCurrentPlayerCards().get(card_index);
+//            // Play Map card
+//            if(!goalFound){
+//                int y = tool.getRandomGoalPosition();
+//                SaboteurMove move = new SaboteurMove(card, 12, y, boardState.getTurnPlayer());
+//                if(boardState.isLegal(move)) return move;
+//            }
+//            // Drop Map card
+//            else{
+//                SaboteurMove move = new SaboteurMove(new SaboteurDrop(), card_index, 0, boardState.getTurnPlayer());
+//                if(boardState.isLegal(move)) return move;
+//            }
+//        }
+//
+//        // Check if malus is active on the player
+//        if(boardState.getNbMalus(boardState.getTurnPlayer()) > 0){
+//            // Play Bonus card to heal
+//            if(tool.isCardInHand(hand,"Bonus")){
+//                int card_index = tool.getCardIndexInHand(hand,"Bonus");
+//                SaboteurCard card = boardState.getCurrentPlayerCards().get(card_index);
+//                SaboteurMove move = new SaboteurMove(card,0,0,boardState.getTurnPlayer());
+//                if(boardState.isLegal(move)) return move;
+//            }
+//            // Drop the worst card in hand
+//            else{
+//                if(tool.hasDeadEndCards(hand)){
+//                    SaboteurMove move = new SaboteurMove(new SaboteurDrop(), tool.getWorstDeadEnd(boardState), 0, boardState.getTurnPlayer());
+//                    if(boardState.isLegal(move)) return move;
+//                }
+//                else{
+//                    Random startRand = new Random();
+//                    int idx = startRand.nextInt(hand.size());
+//                    SaboteurMove move = new SaboteurMove(new SaboteurDrop(), idx, 0, boardState.getTurnPlayer());
+//                    if(boardState.isLegal(move)) return move;
+//                }
+//            }
+//        }
+//
+//        if(tool.isCardInHand(hand,"Destroy")){
+//            if(tool.hasDeadEndCardsToDestroy(boardState)){
+//                int[]cardPos = tool.getDeadEndCardToDestroy(boardState);
+//                SaboteurMove move = new SaboteurMove(new SaboteurDestroy(), cardPos[0], cardPos[1], boardState.getTurnPlayer());
+//                if(boardState.isLegal(move)) return move;
+//            }
+//        }
+//
+//		SaboteurMove move = tool.getBestTile(boardState,tool.getGoal());
+//        if (move != null && boardState.isLegal(move)) {
+//        	System.out.println("using shortest path");
+//        	System.out.println(tool.checkPathBetweenOriginAndCard(move, boardState.getHiddenBoard()));
+//        	return move;
+//        }
         
         /*
         BoardStateClone MCTSstate = new BoardStateClone(this.stateClone);

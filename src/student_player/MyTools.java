@@ -4,6 +4,7 @@ import Saboteur.SaboteurBoard;
 import Saboteur.SaboteurBoardState;
 import Saboteur.SaboteurMove;
 import Saboteur.cardClasses.SaboteurCard;
+import Saboteur.cardClasses.SaboteurDrop;
 import Saboteur.cardClasses.SaboteurTile;
 import java.util.*;
 
@@ -16,13 +17,15 @@ public class MyTools {
     private ArrayList<Integer> y_goal;
     private int[] goal;
     private boolean goalFound;
-    private ArrayList<String> dead_end_cards = new ArrayList<>(Arrays.asList("1","2","2_flip","3","3_flip","11","11_flip","13","14","14_flip","15"));
+    private ArrayList<String> dead_end_cards = new ArrayList<>(Arrays.asList("1","2","2_flip","3","3_flip","4","4_flip","11","11_flip","12","12_flip","13","14","14_flip","15"));
     private ArrayList<String> special_cards = new ArrayList<>(Arrays.asList("Map","Malus","Bonus","Destroy","Drop"));
     private ArrayList<String> connectors = new ArrayList<>(Arrays.asList("0","5","5_flip","6","6_flip","7","7_flip","8","9","9_flip","10"));
     private ArrayList<String> left_cards = new ArrayList<>(Arrays.asList("5_flip","6","7_flip","8","9","9_flip","10"));
     private ArrayList<String> right_cards = new ArrayList<>(Arrays.asList("5","6_flip","7","8","9","9_flip","10"));
     private ArrayList<String> top_cards = new ArrayList<>(Arrays.asList("5_flip","6","6_flip","7","8","9_flip"));
     private ArrayList<String> bottom_cards = new ArrayList<>(Arrays.asList("5","6","6_flip","7_flip","8","9"));
+
+    private ArrayList<String> tileRanking = new ArrayList<>(Arrays.asList("13","11","2","1","15","3","14","12","4","5","7"));
     
     public static final int[][] hiddenPos = {{originPos+7,originPos-2},{originPos+7,originPos},{originPos+7,originPos+2}};
 
@@ -35,38 +38,6 @@ public class MyTools {
         goal = new int[]{originPos+7,originPos};
         goalFound = false;
     }
-
-    public int getRandomGoalPosition(){
-        if(y_goal.size() > 0) {
-            Random startRand = new Random();
-            int idx = startRand.nextInt(y_goal.size());
-            return y_goal.remove(idx);
-        }
-        return -1;
-    }
-
-    public Boolean isCardInHand(ArrayList<SaboteurCard> hand, String name){
-        for (SaboteurCard card : hand){
-            if(card.getName().equals(name)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public int getCardIndexInHand(ArrayList<SaboteurCard> hand, String name){
-        for(int i = 0; i < hand.size(); i++){
-            if(hand.get(i).getName().equals(name)){
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public int[] getGoal(){
-        return this.goal;
-    }
-
     public Boolean checkGoal(SaboteurBoardState bs){
         for(int i = 0; i < 3; i++){
             SaboteurTile[][] board = bs.getHiddenBoard();
@@ -78,6 +49,75 @@ public class MyTools {
             }
         }
         return false;
+    }
+
+    public boolean isInDangerZone(SaboteurBoardState bs){
+        SaboteurTile[][] board = bs.getHiddenBoard();
+        for(int y = 0; y < BOARD_SIZE; y++){
+            if(board[10][y] != null){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public SaboteurMove playMalusCard(SaboteurBoardState bs){
+        ArrayList<SaboteurCard> hand = bs.getCurrentPlayerCards();
+        if(isCardInHand(hand,"Bonus")){
+            int index = getCardIndexInHand(hand,"Bonus");
+            SaboteurCard card = hand.get(index);
+            return new SaboteurMove(card,0,0,bs.getTurnPlayer());
+        }
+        return null;
+    }
+
+    public SaboteurMove playBonusCard(SaboteurBoardState bs){
+        ArrayList<SaboteurCard> hand = bs.getCurrentPlayerCards();
+        if(isCardInHand(hand,"Bonus")){
+            int index = getCardIndexInHand(hand,"Bonus");
+            SaboteurCard card = hand.get(index);
+            return new SaboteurMove(card,0,0,bs.getTurnPlayer());
+        }
+        return null;
+    }
+
+    public SaboteurMove playMapCard(SaboteurBoardState bs){
+        ArrayList<SaboteurCard> hand = bs.getCurrentPlayerCards();
+        if(isCardInHand(hand,"Map")){
+            int index = getCardIndexInHand(hand,"Map");
+            SaboteurCard card = hand.get(index);
+            int y_pos = getRandomGoalPosition();
+            return new SaboteurMove(card,12,y_pos,bs.getTurnPlayer());
+        }
+        return null;
+    }
+
+    public SaboteurMove destroyCard(SaboteurBoardState bs, int[] pos){
+        ArrayList<SaboteurCard> hand = bs.getCurrentPlayerCards();
+        if(isCardInHand(hand,"Destroy")){
+            int index = getCardIndexInHand(hand,"Destroy");
+            SaboteurCard card = hand.get(index);
+            return new SaboteurMove(card,pos[0],pos[1],bs.getTurnPlayer());
+        }
+        return null;
+    }
+
+    public SaboteurMove dropMostUselessCard(SaboteurBoardState bs) {
+        ArrayList<SaboteurCard> hand = bs.getCurrentPlayerCards();
+        if (goalFound == true && getCardIndexInHand(hand, "Map") != -1) {
+            int index = this.getCardIndexInHand(hand, "Map");
+            return new SaboteurMove(new SaboteurDrop(), index, 0, bs.getTurnPlayer());
+        }
+        for (String tile_idx : this.tileRanking) {
+            for (SaboteurCard card : hand) {
+                if (card instanceof SaboteurTile && ((SaboteurTile) card).getIdx().equals(tile_idx)) {
+                    int index = this.getCardIndexInHand(hand, card.getName());
+                    return new SaboteurMove(new SaboteurDrop(), index, 0, bs.getTurnPlayer());
+                }
+
+            }
+        }
+        return null;
     }
 
     public boolean hasDeadEndCards(ArrayList<SaboteurCard>hand){
@@ -171,14 +211,14 @@ public class MyTools {
         }
         return null;
     }
-    public SaboteurMove getBestTile(SaboteurBoardState bs, int[] goal){
+    public SaboteurMove getBestTile(SaboteurBoardState bs){
         ArrayList<SaboteurMove> moves = bs.getAllLegalMoves();
         SaboteurMove bestMove = null;
         double min_dist = Integer.MAX_VALUE;
         int[][]intBoard = bs.getHiddenIntBoard();
 
-        int x_goal = 3 * goal[0] + 1;
-        int y_goal = 3 * goal[1] + 2;
+        int x_goal = 3 * this.goal[0] + 1;
+        int y_goal = 3 * this.goal[1] + 2;
 
         // Best moves are using connectors tiles
         for(SaboteurMove m : moves){
@@ -250,7 +290,7 @@ public class MyTools {
     }
       
       
-      private void addUnvisitedNeighborToQueue(SaboteurTile[][] hiddenBoard, int[] pos, ArrayList<int[]> queue, ArrayList<int[]> visited,int maxSize){
+    private void addUnvisitedNeighborToQueue(SaboteurTile[][] hiddenBoard, int[] pos, ArrayList<int[]> queue, ArrayList<int[]> visited,int maxSize){
         int[][] moves = {{0, -1},{0, 1},{1, 0},{-1, 0}};
         int i = pos[0];
         int j = pos[1];
@@ -263,18 +303,48 @@ public class MyTools {
             }
         }
     }
-      private boolean containsIntArray(ArrayList<int[]> a,int[] o){ //the .equals used in Arraylist.contains is not working between arrays..
-        if (o == null) {
-            for (int i = 0; i < a.size(); i++) {
-                if (a.get(i) == null)
-                    return true;
-            }
-        } else {
-            for (int i = 0; i < a.size(); i++) {
-                if (Arrays.equals(o, a.get(i)))
-                    return true;
+
+    private boolean containsIntArray(ArrayList<int[]> a,int[] o){ //the .equals used in Arraylist.contains is not working between arrays..
+         if (o == null) {
+             for (int i = 0; i < a.size(); i++) {
+                 if (a.get(i) == null)
+                     return true;
+             }
+         }
+         else {
+             for (int i = 0; i < a.size(); i++) {
+                 if (Arrays.equals(o, a.get(i)))
+                     return true;
+             }
+         }
+         return false;
+    }
+
+    // Helper methods
+    private int getRandomGoalPosition(){
+        if(y_goal.size() > 0) {
+            Random startRand = new Random();
+            int idx = startRand.nextInt(y_goal.size());
+            return y_goal.remove(idx);
+        }
+        return -1;
+    }
+
+    private Boolean isCardInHand(ArrayList<SaboteurCard> hand, String name){
+        for (SaboteurCard card : hand){
+            if(card.getName().equals(name)){
+                return true;
             }
         }
         return false;
+    }
+
+    private int getCardIndexInHand(ArrayList<SaboteurCard> hand, String name){
+        for(int i = 0; i < hand.size(); i++){
+            if(hand.get(i).getName().equals(name)){
+                return i;
+            }
+        }
+        return -1;
     }
 }
