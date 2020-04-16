@@ -6,6 +6,8 @@ import Saboteur.SaboteurMove;
 import Saboteur.cardClasses.SaboteurCard;
 import Saboteur.cardClasses.SaboteurDrop;
 import Saboteur.cardClasses.SaboteurTile;
+import com.sun.jdi.IntegerType;
+
 import java.util.*;
 
 
@@ -26,7 +28,7 @@ public class MyTools {
     private ArrayList<String> top_cards = new ArrayList<>(Arrays.asList("5_flip","6","6_flip","7","8","9_flip"));
     private ArrayList<String> bottom_cards = new ArrayList<>(Arrays.asList("5","6","6_flip","7_flip","8","9"));
 
-    private ArrayList<String> tileRanking = new ArrayList<>(Arrays.asList("13","11","2","1","15","3","14","12","4","5","7","10","9","0","6","8"));
+    private ArrayList<String> tileRanking = new ArrayList<>(Arrays.asList("13","11","2","1","15","3","14","12","4","5","7"));
     private ArrayList<String> generallyBadCards = new ArrayList<>(Arrays.asList("1", "2","2_flip","3","3_flip","4","4_flip","11","11_flip","12","12_flip", "13","14","14_flip","15"));
 
     public static final int[][] hiddenPos = {{originPos+7,originPos-2},{originPos+7,originPos},{originPos+7,originPos+2}};
@@ -41,10 +43,6 @@ public class MyTools {
         goalFound = false;
     }
 
-    public int[] getGoal(){
-        return this.goal;
-    }
-
     public Boolean checkGoal(SaboteurBoardState bs){
         for(int i = 0; i < 3; i++){
             SaboteurTile[][] board = bs.getHiddenBoard();
@@ -56,6 +54,26 @@ public class MyTools {
             }
         }
         return false;
+    }
+
+    public boolean isInDangerZone(SaboteurBoardState bs){
+        SaboteurTile[][] board = bs.getHiddenBoard();
+        for(int y = 0; y < BOARD_SIZE; y++){
+            if(board[10][y] != null){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public SaboteurMove playMalusCard(SaboteurBoardState bs){
+        ArrayList<SaboteurCard> hand = bs.getCurrentPlayerCards();
+        if(isCardInHand(hand,"Bonus")){
+            int index = getCardIndexInHand(hand,"Bonus");
+            SaboteurCard card = hand.get(index);
+            return new SaboteurMove(card,0,0,bs.getTurnPlayer());
+        }
+        return null;
     }
 
     public SaboteurMove playBonusCard(SaboteurBoardState bs){
@@ -100,7 +118,6 @@ public class MyTools {
                 if(card instanceof SaboteurTile && ((SaboteurTile) card).getIdx().equals(tile_idx)){
                     int index = this.getCardIndexInHand(hand,card.getName());
                     return new SaboteurMove(new SaboteurDrop(),index,0,bs.getTurnPlayer());
-
                 }
 
             }
@@ -108,41 +125,42 @@ public class MyTools {
         return null;
     }
 
-    public boolean oneTileFromGoalTile(SaboteurBoardState bs){
-        SaboteurTile[][] board = bs.getHiddenBoard();
-        if(goalFound){
-            // Check row 10
-            for(int y = 3; y <= 7; y = y+2){
-                if(board[10][y] != null && y == goal[1]){
-                    // tile on top of the goal
-                    SaboteurMove straightMove = new SaboteurMove(new SaboteurTile("0"),goal[0],goal[1]-1,bs.getTurnPlayer());
-                    String idx = board[10][y].getIdx();
-                    if(idx.equals("0") || idx.equals("8") || idx.equals("6") || idx.equals("6_flip")){
-                        if(checkExistingPath(bs,straightMove)){
-                            return true;
-                        }
-                    }
-                }
-            }
-            // Check row 11
-        }
-        else{
-            for(int y = 0; y < BOARD_SIZE; y++){
-                //Check row 10 on the board
-                if(board[10][y] != null && y == goal[1]){
-                    // tile on top of the goal
-                    SaboteurMove straightMove = new SaboteurMove(new SaboteurTile("0"),goal[0],goal[1]-1,bs.getTurnPlayer());
-                    String idx = board[10][y].getIdx();
-                    if(idx.equals("0") || idx.equals("8") || idx.equals("6") || idx.equals("6_flip")){
-                        if(checkExistingPath(bs,straightMove)){
-                            return true;
-                        }
-                    }
-                }
-            }
-
-        }
-    }
+//    public boolean oneTileFromGoal(SaboteurBoardState bs){
+//        SaboteurTile[][] board = bs.getHiddenBoard();
+//        if(goalFound){
+//            // Check row 10
+//            for(int y = 3; y <= 7; y = y+2){
+//                if(board[10][y] != null && y == goal[1]){
+//                    // tile on top of the goal
+//                    SaboteurMove straightMove = new SaboteurMove(new SaboteurTile("0"),goal[0],goal[1]-1,bs.getTurnPlayer());
+//                    String idx = board[10][y].getIdx();
+//                    if(idx.equals("0") || idx.equals("8") || idx.equals("6") || idx.equals("6_flip")){
+//                        if(checkExistingPath(bs,straightMove)){
+//                            return true;
+//                        }
+//                    }
+//                }
+//            }
+//            // Check row 11
+//        }
+//        else{
+//            for(int y = 0; y < BOARD_SIZE; y++){
+//                //Check row 10 on the board
+//                if(board[10][y] != null && y == goal[1]){
+//                    // tile on top of the goal
+//                    SaboteurMove straightMove = new SaboteurMove(new SaboteurTile("0"),goal[0],goal[1]-1,bs.getTurnPlayer());
+//                    String idx = board[10][y].getIdx();
+//                    if(idx.equals("0") || idx.equals("8") || idx.equals("6") || idx.equals("6_flip")){
+//                        if(checkExistingPath(bs,straightMove)){
+//                            return true;
+//                        }
+//                    }
+//                }
+//            }
+//
+//        }
+//        return false;
+//    }
     private int getRandomGoalPosition(){
         if(y_goal.size() > 0) {
             Random startRand = new Random();
@@ -168,6 +186,17 @@ public class MyTools {
             }
         }
         return -1;
+    }
+    private int getDepth(SaboteurBoardState bs){
+        int depth = Integer.MIN_VALUE;
+        for(SaboteurMove move : bs.getAllLegalMoves()){
+            if (move.getCardPlayed() instanceof SaboteurTile){
+                if(move.getPosPlayed()[0] > depth && checkPathBetweenOriginAndCard(move,bs.getHiddenBoard())){
+                    depth = move.getPosPlayed()[0];
+                }
+            }
+        }
+        return depth;
     }
 
     public boolean hasDeadEndCards(ArrayList<SaboteurCard>hand){
@@ -205,20 +234,6 @@ public class MyTools {
         return index;
     }
 
-    public boolean hasDeadEndCardsToDestroy(SaboteurBoardState bs){
-        SaboteurTile[][] board = bs.getHiddenBoard();
-        for(int i= originPos+1; i < originPos+7; i++){
-            for(int j = 0; j < BOARD_SIZE; j++){
-                if(board[i][j] != null) {
-                    if (dead_end_cards.contains(board[i][j].getIdx())) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
     public int[] getDeadEndCardToDestroy(SaboteurBoardState bs){
         SaboteurTile[][] board = bs.getHiddenBoard();
         for(int i= originPos+1; i < originPos+7; i++){
@@ -232,95 +247,149 @@ public class MyTools {
         }
         return null;
     }
-    public SaboteurMove getBestTile(SaboteurBoardState bs, int[] goal){
-        ArrayList<SaboteurMove> moves = bs.getAllLegalMoves();
+
+    private ArrayList<SaboteurMove> getGoodTileMoves(SaboteurBoardState bs){
+        ArrayList<SaboteurMove> allGoodMoves = new ArrayList<>();
+        for(SaboteurMove move : bs.getAllLegalMoves()){
+            if(move.getCardPlayed() instanceof SaboteurTile) {
+                if (checkPathBetweenOriginAndCard(move,bs.getHiddenBoard())) {
+                    allGoodMoves.add(move);
+                }
+            }
+        }
+        System.out.println("Size : " + allGoodMoves.size());
+        return allGoodMoves;
+    }
+
+    Comparator ourComparator=new Comparator<SaboteurMove>() {
+        public int compare(SaboteurMove t1, SaboteurMove t2) {
+            return t1.getPosPlayed()[0] - t2.getPosPlayed()[0];
+        }
+    };
+    public SaboteurMove getBestTile(SaboteurBoardState bs){
+        ArrayList<SaboteurMove> goodTileMoves = this.getGoodTileMoves(bs);
         SaboteurMove bestMove = null;
-        double min_dist = 0.0;
-        int[][]intBoard = bs.getHiddenIntBoard();
+        double min_dist = Integer.MAX_VALUE;
+
+        int[][]intBoard = bs.getHiddenIntBoard_corrected();
 
         int x_goal = 3 * goal[0] + 1;
         int y_goal = 3 * goal[1] + 2;
 
         // Best moves are using connectors tiles
-        for(SaboteurMove m : moves){
-            if(m.getCardPlayed() instanceof SaboteurTile){
-                SaboteurTile tile = (SaboteurTile) m.getCardPlayed();
-                if(connectors.contains(tile.getIdx())){
-                    if(left_cards.contains(tile.getIdx())){
-                        int x_left = 3 * m.getPosPlayed()[0];
-                        int y_left = 3 * m.getPosPlayed()[1] + 1;
-                        double dist = Math.sqrt((x_goal - x_left)^2 + (y_goal - y_left)^2);
-                        if(min_dist > dist){
-                            min_dist = dist;
-                            bestMove = m;
-                        }
-                    }
-                    if(right_cards.contains(tile.getIdx())){
-                        int x_right = 3 * m.getPosPlayed()[0] + 2;
-                        int y_right = 3 * m.getPosPlayed()[1] + 1;
-                        double dist = Math.sqrt((x_goal - x_right)^2 + (y_goal - y_right)^2);
-                        if(min_dist > dist){
-                            min_dist = dist;
-                            bestMove = m;
-                        }
-                    }
-                    if(top_cards.contains(tile.getIdx())){
-                        int x_top = 3 * m.getPosPlayed()[0] + 1;
-                        int y_top = 3 * m.getPosPlayed()[1] + 2;
-                        double dist = Math.sqrt((x_goal - x_top)^2 + (y_goal - y_top)^2);
-                        if(min_dist > dist){
-                            min_dist = dist;
-                            bestMove = m;
-                        }
-                    }
-                    if(bottom_cards.contains(tile.getIdx())){
-                        int x_bottom = 3 * m.getPosPlayed()[0] + 1;
-                        int y_bottom = 3 * m.getPosPlayed()[1];
-                        double dist = Math.sqrt((x_goal - x_bottom)^2 + (y_goal - y_bottom)^2);
-                        if(min_dist > dist){
-                            min_dist = dist;
-                            bestMove = m;
-                        }
-                    }
+        for(SaboteurMove m : goodTileMoves){
+            SaboteurTile tile = (SaboteurTile)m.getCardPlayed();
+            if (left_cards.contains(tile.getIdx())) {
+                int x_left = 3 * m.getPosPlayed()[0];
+                int y_left = 3 * m.getPosPlayed()[1] + 1;
+                double dist =  Math.abs(x_goal - x_left) + Math.abs(y_goal - y_left);
+                if (min_dist > dist) {
+                    min_dist = dist;
+                    bestMove = m;
                 }
             }
-
+            if (right_cards.contains(tile.getIdx())) {
+                int x_right = 3 * m.getPosPlayed()[0] + 2;
+                int y_right = 3 * m.getPosPlayed()[1] + 1;
+                double dist =  Math.abs(x_goal - x_right) + Math.abs(y_goal - y_right);
+                if (min_dist > dist) {
+                    min_dist = dist;
+                    bestMove = m;
+                }
+            }
+            if (top_cards.contains(tile.getIdx())) {
+                int x_top = 3 * m.getPosPlayed()[0] + 1;
+                int y_top = 3 * m.getPosPlayed()[1] + 2;
+                double dist =  Math.abs(x_goal - x_top) + Math.abs(y_goal - y_top);
+                if (min_dist > dist) {
+                    min_dist = dist;
+                    bestMove = m;
+                }
+            }
+            if (bottom_cards.contains(tile.getIdx())) {
+                int x_bottom = 3 * m.getPosPlayed()[0] + 1;
+                int y_bottom = 3 * m.getPosPlayed()[1];
+                double dist =  Math.abs(x_goal - y_bottom) + Math.abs(y_goal - y_bottom);
+                if (min_dist > dist) {
+                    min_dist = dist;
+                    bestMove = m;
+                }
+            }
         }
+//        ArrayList<String> play_order = new ArrayList<>(Arrays.asList("8","6","0","9","10","5","7"));
+//        for(String card_idx : play_order) {
+//            for (SaboteurMove move : goodTileMoves) {
+//                if(move.getPosPlayed()[0] == (this.getLowestRow(bs) + 1)) {
+//                    String idx = ((SaboteurTile) move.getCardPlayed()).getIdx();
+//                    if (idx.equals(card_idx) || idx.split("_flip")[0].equals(card_idx)) {
+//                        return move;
+//                    }
+//                }
+//            }
+//        }
         return bestMove;
     }
+    public boolean checkPathBetweenOriginAndCard(SaboteurMove move, SaboteurTile[][] board) {
+        int[] originPosition = {originPos, originPos};
+        ArrayList<int[]> origin = new ArrayList<>(Arrays.asList(originPosition));
 
-    private boolean checkExistingPath(SaboteurBoardState bs, SaboteurMove move){
-        boolean existingPath = false;
-        ArrayList<int[]> originTargets = new ArrayList<>();
 
-        //Using card coordinates
-        originTargets.add(new int[]{originPos,originPos}); // coordinate of origin
-        int[] targetPos = new int[]{move.getPosPlayed()[0], move.getPosPlayed()[1]};
+        int[] movePos = move.getPosPlayed();
+        int[][] moves = {{0, -1},{0, 1},{1, 0},{-1, 0}};
+        int i = movePos[0];
+        int j = movePos[1];
+        ArrayList<int[]> neighbors = new ArrayList<>();
 
-        // Check path with card coordinates
-        if (cardPath(bs,originTargets, targetPos, true)) { //checks that there is a cardPath
-
-            // Check 0-1 path
-            ArrayList<int[]> originTargetInt = new ArrayList<>();
-            // origin coordinates in int board
-            originTargetInt.add(new int[]{originPos*3+1, originPos*3+1});
-            originTargetInt.add(new int[]{originPos*3+1, originPos*3+2});
-            originTargetInt.add(new int[]{originPos*3+1, originPos*3});
-            originTargetInt.add(new int[]{originPos*3, originPos*3+1});
-            originTargetInt.add(new int[]{originPos*3+2, originPos*3+1});
-
-            int[] targetPosInt = new int[]{move.getPosPlayed()[0]*3+1, move.getPosPlayed()[1]*3+1};
-
-            // Check path in int board
-            if (cardPath(bs,originTargetInt, targetPosInt, false)) {
-                existingPath =true;
+        for (int m = 0; m < 4; m++) {
+            if (0 <= i+moves[m][0] && i+moves[m][0] < BOARD_SIZE && 0 <= j+moves[m][1] && j+moves[m][1] < BOARD_SIZE) { //if the hypothetical neighbor is still inside the board
+                int[] neighborPos = new int[]{i+moves[m][0],j+moves[m][1]};
+                if(board[neighborPos[0]][neighborPos[1]] != null) neighbors.add(neighborPos);
             }
-
         }
-        return existingPath;
+
+        for (int[] neighbor : neighbors) {
+            if (checkPath(board, origin, neighbor)) {
+                System.out.println("Connected to origin!");
+                return true;
+            }
+        }
+        System.out.println("Not connected to origin!");
+        return false;
     }
-    // FROM SaboteurStateBoard //
-    private boolean containsIntArray(ArrayList<int[]> a,int[] o){ //the .equals used in Arraylist.contains is not working between arrays..
+
+    // Methods from board state clone
+    private static Boolean checkPath(SaboteurTile[][] hiddenBoard, ArrayList<int[]> origin, int[] movePosition){ //theBoardMap,point,entrance
+        // the search algorithm, usingCard indicate whether we search a path of cards (true) or a path of ones (aka tunnel)(false).
+        ArrayList<int[]> queue = new ArrayList<>(); //will store the current neighboring tile. Composed of position (int[]).
+        ArrayList<int[]> visited = new ArrayList<int[]>(); //will store the visited tile with an Hash table where the key is the position the board.
+        visited.add(movePosition);
+        addUnvisitedNeighborToQueue(hiddenBoard, movePosition, queue,visited, BOARD_SIZE);
+        while(queue.size()>0){
+            int[] visitingPos = queue.remove(0);
+            if(containsIntArray(origin,visitingPos)){
+                return true;
+            }
+            visited.add(visitingPos);
+            addUnvisitedNeighborToQueue(hiddenBoard, visitingPos, queue,visited, BOARD_SIZE);
+            System.out.println(queue.size());
+        }
+        return false;
+    }
+
+    private static void addUnvisitedNeighborToQueue(SaboteurTile[][] hiddenBoard, int[] pos, ArrayList<int[]> queue, ArrayList<int[]> visited,int maxSize){
+        int[][] moves = {{0, -1},{0, 1},{1, 0},{-1, 0}};
+        int i = pos[0];
+        int j = pos[1];
+        for (int m = 0; m < 4; m++) {
+            if (0 <= i+moves[m][0] && i+moves[m][0] < maxSize && 0 <= j+moves[m][1] && j+moves[m][1] < maxSize) { //if the hypothetical neighbor is still inside the board
+                int[] neighborPos = new int[]{i+moves[m][0],j+moves[m][1]};
+                if(!containsIntArray(visited,neighborPos)){
+                    if(hiddenBoard[neighborPos[0]][neighborPos[1]] != null) queue.add(neighborPos);
+                }
+            }
+        }
+    }
+    private static boolean containsIntArray(ArrayList<int[]> a,int[] o){ //the .equals used in Arraylist.contains is not working between arrays..
         if (o == null) {
             for (int i = 0; i < a.size(); i++) {
                 if (a.get(i) == null)
@@ -335,37 +404,86 @@ public class MyTools {
         return false;
     }
 
-    private Boolean cardPath(SaboteurBoardState bs,ArrayList<int[]> originTargets,int[] targetPos,Boolean usingCard){
-        // the search algorithm, usingCard indicate weither we search a path of cards (true) or a path of ones (aka tunnel)(false).
-        ArrayList<int[]> queue = new ArrayList<>(); //will store the current neighboring tile. Composed of position (int[]).
-        ArrayList<int[]> visited = new ArrayList<int[]>(); //will store the visited tile with an Hash table where the key is the position the board.
-        visited.add(targetPos);
-        if(usingCard) addUnvisitedNeighborToQueue(bs,targetPos,queue,visited,BOARD_SIZE,usingCard);
-        else addUnvisitedNeighborToQueue(bs,targetPos,queue,visited,BOARD_SIZE*3,usingCard);
-        while(queue.size()>0){
-            int[] visitingPos = queue.remove(0);
-            if(containsIntArray(originTargets,visitingPos)){
-                return true;
-            }
-            visited.add(visitingPos);
-            if(usingCard) addUnvisitedNeighborToQueue(bs,visitingPos,queue,visited,BOARD_SIZE,usingCard);
-            else addUnvisitedNeighborToQueue(bs,visitingPos,queue,visited,BOARD_SIZE*3,usingCard);
-            System.out.println(queue.size());
-        }
-        return false;
-    }
-    private void addUnvisitedNeighborToQueue(SaboteurBoardState bs,int[] pos,ArrayList<int[]> queue, ArrayList<int[]> visited,int maxSize,boolean usingCard){
-        int[][] moves = {{0, -1},{0, 1},{1, 0},{-1, 0}};
-        int i = pos[0];
-        int j = pos[1];
-        for (int m = 0; m < 4; m++) {
-            if (0 <= i+moves[m][0] && i+moves[m][0] < maxSize && 0 <= j+moves[m][1] && j+moves[m][1] < maxSize) { //if the hypothetical neighbor is still inside the board
-                int[] neighborPos = new int[]{i+moves[m][0],j+moves[m][1]};
-                if(!containsIntArray(visited,neighborPos)){
-                    if(usingCard && bs.getHiddenBoard()[neighborPos[0]][neighborPos[1]]!=null) queue.add(neighborPos);
-                    else if(!usingCard && bs.getHiddenIntBoard()[neighborPos[0]][neighborPos[1]]==1) queue.add(neighborPos);
-                }
-            }
-        }
-    }
+//    private boolean checkExistingPath(SaboteurBoardState bs, SaboteurMove move){
+//        boolean existingPath = false;
+//        ArrayList<int[]> originTargets = new ArrayList<>();
+//
+//        //Using card coordinates
+//        originTargets.add(new int[]{originPos,originPos}); // coordinate of origin
+//        int[] targetPos = new int[]{move.getPosPlayed()[0], move.getPosPlayed()[1]};
+//
+//        // Check path with card coordinates
+//        if (cardPath(bs,originTargets, targetPos, true)) { //checks that there is a cardPath
+//
+//            // Check 0-1 path
+//            ArrayList<int[]> originTargetInt = new ArrayList<>();
+//            // origin coordinates in int board
+//            originTargetInt.add(new int[]{originPos*3+1, originPos*3+1});
+//            originTargetInt.add(new int[]{originPos*3+1, originPos*3+2});
+//            originTargetInt.add(new int[]{originPos*3+1, originPos*3});
+//            originTargetInt.add(new int[]{originPos*3, originPos*3+1});
+//            originTargetInt.add(new int[]{originPos*3+2, originPos*3+1});
+//
+//            int[] targetPosInt1 = {targetPos[0]*3+1, targetPos[1]*3+2};
+//            int[] targetPosInt2 = {targetPos[0]*3+2, targetPos[1]*3+1};
+//            int[] targetPosInt3 = {targetPos[0]*3+1, targetPos[1]*3};
+//            int[] targetPosInt4 = {targetPos[0]*3, targetPos[1]*3+1};
+//            // Check path in int board
+//            if (cardPath(bs,originTargetInt, targetPosInt1, false) || cardPath(bs,originTargetInt, targetPosInt2, false)||
+//                cardPath(bs,originTargetInt, targetPosInt3, false) || cardPath(bs,originTargetInt, targetPosInt4, false)){
+//                existingPath =true;
+//            }
+//
+//        }
+//        return existingPath;
+//    }
+//    // FROM SaboteurStateBoard //
+//    private boolean containsIntArray(ArrayList<int[]> a,int[] o){ //the .equals used in Arraylist.contains is not working between arrays..
+//        if (o == null) {
+//            for (int i = 0; i < a.size(); i++) {
+//                if (a.get(i) == null)
+//                    return true;
+//            }
+//        } else {
+//            for (int i = 0; i < a.size(); i++) {
+//                if (Arrays.equals(o, a.get(i)))
+//                    return true;
+//            }
+//        }
+//        return false;
+//    }
+//
+//    private Boolean cardPath(SaboteurBoardState bs,ArrayList<int[]> originTargets,int[] targetPos,Boolean usingCard){
+//        // the search algorithm, usingCard indicate weither we search a path of cards (true) or a path of ones (aka tunnel)(false).
+//        ArrayList<int[]> queue = new ArrayList<>(); //will store the current neighboring tile. Composed of position (int[]).
+//        ArrayList<int[]> visited = new ArrayList<int[]>(); //will store the visited tile with an Hash table where the key is the position the board.
+//        visited.add(targetPos);
+//        if(usingCard) addUnvisitedNeighborToQueue(bs,targetPos,queue,visited,BOARD_SIZE,usingCard);
+//        else addUnvisitedNeighborToQueue(bs,targetPos,queue,visited,BOARD_SIZE*3,usingCard);
+//        while(queue.size()>0){
+//            int[] visitingPos = queue.remove(0);
+//            if(containsIntArray(originTargets,visitingPos)){
+//                return true;
+//            }
+//            visited.add(visitingPos);
+//            if(usingCard) addUnvisitedNeighborToQueue(bs,visitingPos,queue,visited,BOARD_SIZE,usingCard);
+//            else addUnvisitedNeighborToQueue(bs,visitingPos,queue,visited,BOARD_SIZE*3,usingCard);
+//            System.out.println(queue.size());
+//        }
+//        return false;
+//    }
+//    private void addUnvisitedNeighborToQueue(SaboteurBoardState bs,int[] pos,ArrayList<int[]> queue, ArrayList<int[]> visited,int maxSize,boolean usingCard){
+//        int[][] moves = {{0, -1},{0, 1},{1, 0},{-1, 0}};
+//        int i = pos[0];
+//        int j = pos[1];
+//        for (int m = 0; m < 4; m++) {
+//            if (0 <= i+moves[m][0] && i+moves[m][0] < maxSize && 0 <= j+moves[m][1] && j+moves[m][1] < maxSize) { //if the hypothetical neighbor is still inside the board
+//                int[] neighborPos = new int[]{i+moves[m][0],j+moves[m][1]};
+//                if(!containsIntArray(visited,neighborPos)){
+//                    if(usingCard && bs.getHiddenBoard()[neighborPos[0]][neighborPos[1]]!=null) queue.add(neighborPos);
+//                    else if(!usingCard && bs.getHiddenIntBoard()[neighborPos[0]][neighborPos[1]]==1) queue.add(neighborPos);
+//                }
+//            }
+//        }
+//    }
 }

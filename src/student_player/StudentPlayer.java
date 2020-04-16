@@ -36,6 +36,8 @@ public class StudentPlayer extends SaboteurPlayer {
         // For example, maybe you'll need to load some pre-processed best opening
         // strategies...
     	MyTools tool = new MyTools();
+        String test = "Tile:6";
+        String[] split = test.split("Tile:");
 
         //Initialize or update the boardStateClone
         if(stateClone == null){
@@ -58,18 +60,26 @@ public class StudentPlayer extends SaboteurPlayer {
         // Check if malus is active on the player
         SaboteurMove move;
         if(isMalusActive > 0){
+
             // Play Bonus card to heal
             move = tool.playBonusCard(boardState);
             if(move != null && boardState.isLegal(move)) return move;
+
+            //Play Malus card if in danger zone (row 10)
+            if(tool.isInDangerZone(boardState)){
+                move = tool.playMalusCard(boardState);
+                if(move != null && boardState.isLegal(move)) return move;
+            }
+
             // Play Map card if goal not found
             if(!goalFound){
                 move = tool.playMapCard(boardState);
                 if(move != null && boardState.isLegal(move)) return move;
             }
-
-
-            // Drop worst tile card
+            // Drop worst card
             move = tool.dropMostUselessCard(boardState);
+            if(move != null && boardState.isLegal(move)) return move;
+
         }
         else {
             // Check for Map card
@@ -78,34 +88,41 @@ public class StudentPlayer extends SaboteurPlayer {
                 if (move != null && boardState.isLegal(move)) return move;
             }
 
-
-//            if (tool.isCardInHand(hand, "Destroy")) {
-//                if (tool.hasDeadEndCardsToDestroy(boardState)) {
-//                    int[] cardPos = tool.getDeadEndCardToDestroy(boardState);
-//                    SaboteurMove move = tool.getDestroyMove(boardState, cardPos);
-//                    if (boardState.isLegal(move)) return move;
-//                }
-//            }
-        }
-
-		ISMCTS player = new ISMCTS(this.stateClone, 2000, boardState.getTurnPlayer());
-		SaboteurMove nextMove;
-		player.setRootState(stateClone);
-		nextMove = player.run();
-        
-        
-        // Object[] results = miniMax(3, clonedState, Integer.MIN_VALUE, Integer.MAX_VALUE, player_id);
-        if (boardState.isLegal((SaboteurMove) nextMove)) {
-        	System.out.println("using MCTS : "+nextMove.getCardPlayed().getName());
-        	return nextMove;
-        }
-        else {
-        	SaboteurMove move = tool.getBestTile(boardState,tool.getGoal());
-            if (move != null && boardState.isLegal(move)) {
-            	System.out.println("using shortest path");
-            	return move;
+            //Play Malus card if in danger zone
+            if(tool.isInDangerZone(boardState)){
+                move = tool.playMalusCard(boardState);
+                if(move != null && boardState.isLegal(move)) return move;
             }
+
+            // Destroy dead ends card
+
+            //Choose best tile
+            move = tool.getBestTile(boardState);
+            if(move != null && boardState.isLegal(move)) return move;
+
+            // Drop worst card
+            move = tool.dropMostUselessCard(boardState);
+            if(move != null && boardState.isLegal(move)) return move;
         }
+
+//		ISMCTS player = new ISMCTS(this.stateClone, 2000, boardState.getTurnPlayer());
+//		SaboteurMove nextMove;
+//		player.setRootState(stateClone);
+//		nextMove = player.run();
+//
+//
+//        // Object[] results = miniMax(3, clonedState, Integer.MIN_VALUE, Integer.MAX_VALUE, player_id);
+//        if (boardState.isLegal((SaboteurMove) nextMove)) {
+//        	System.out.println("using MCTS : "+nextMove.getCardPlayed().getName());
+//        	return nextMove;
+//        }
+//        else {
+//            move = tool.getBestTile(boardState,tool.getGoal());
+//            if (move != null && boardState.isLegal(move)) {
+//            	System.out.println("using shortest path");
+//            	return move;
+//            }
+//        }
 
         // Is random the best you can do?
         System.out.println("Random");
@@ -118,57 +135,4 @@ public class StudentPlayer extends SaboteurPlayer {
 
         // Is random the best you can do?
     }
-    
-    // Minimax attempt, unable to get good evaluation function
-    /*
-    private Object[] miniMax(int depth, BoardStateClone boardState, int alpha, int beta, int playerId) {
-		Object[] newObject = new Object[2];
-		int score = 0;
-		int opponentId = 1 - playerId;
-		Move chosenMove = boardState.getRandomMove();
-		
-		if (boardState.gameOver()) {
-			if (boardState.getWinner() == playerId) {
-				score = 500;
-			}
-			else if (boardState.getWinner() == (playerId == 1 ? 0: 1)) {
-				score = -500;
-			}
-			else {
-				score = 0;
-			}
-		}
-		
-		else {
-			ArrayList<SaboteurMove> moves = boardState.getAllLegalMoves();
-			for (SaboteurMove move: moves) {
-				BoardStateClone clonedState = new BoardStateClone(boardState);
-				clonedState.processMove(move);
-				
-				if (playerId == player_id) {
-					score = (int) miniMax(depth - 1, clonedState, alpha, beta, opponentId)[0];
-					if (score > alpha) {
-						alpha = score;
-						chosenMove = move;
-					}
-				}
-				else {
-					score = (int) miniMax(depth - 1, clonedState, alpha, beta, playerId)[0];
-					if (score < beta) {
-						beta = score;
-						chosenMove = move;
-					}
-				}
-				if (alpha > beta) {
-					break;
-				}
-			}
-		}
-		// Returns random move for now
-		newObject[0] = score;
-		newObject[1] = chosenMove;
-		return newObject;
-	}
-    */
-    // private int evaluate()
 }
