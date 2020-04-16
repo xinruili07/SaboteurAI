@@ -16,13 +16,13 @@ public class MyTools {
     private ArrayList<Integer> y_goal;
     private int[] goal;
     private boolean goalFound;
-    private ArrayList<String> dead_end_cards = new ArrayList<>(Arrays.asList("1","2","2_flip","3","3_flip","11","11_flip","13","14","14_flip","15"));
+    private ArrayList<String> dead_end_cards = new ArrayList<>(Arrays.asList("1","2","2_flip","3","3_flip","4","4_flip","11","11_flip","12","12_flip","13","14","14_flip","15"));
     private ArrayList<String> special_cards = new ArrayList<>(Arrays.asList("Map","Malus","Bonus","Destroy","Drop"));
     private ArrayList<String> connectors = new ArrayList<>(Arrays.asList("0","5","5_flip","6","6_flip","7","7_flip","8","9","9_flip","10"));
     private ArrayList<String> left_cards = new ArrayList<>(Arrays.asList("5_flip","6","7_flip","8","9","9_flip","10"));
     private ArrayList<String> right_cards = new ArrayList<>(Arrays.asList("5","6_flip","7","8","9","9_flip","10"));
-    private ArrayList<String> top_cards = new ArrayList<>(Arrays.asList("5_flip","6","6_flip","7","8","9_flip"));
-    private ArrayList<String> bottom_cards = new ArrayList<>(Arrays.asList("5","6","6_flip","7_flip","8","9"));
+    private ArrayList<String> top_cards = new ArrayList<>(Arrays.asList("0","5_flip","6","6_flip","7","8","9_flip"));
+    private ArrayList<String> bottom_cards = new ArrayList<>(Arrays.asList("0","5","6","6_flip","7_flip","8"));
     
     public static final int[][] hiddenPos = {{originPos+7,originPos-2},{originPos+7,originPos},{originPos+7,originPos+2}};
 
@@ -89,12 +89,49 @@ public class MyTools {
         return false;
     }
     
+    public boolean winningMove(SaboteurMove move, BoardStateClone boardState) {
+    	if (boardState.isLegal(move)) {
+    		boardState.processMove(move);
+    	}
+    	if (checkPathBetweenOriginAndPos(getGoal(), boardState.getHiddenBoard())) {
+    		return true;
+    	}
+    	return false;
+    }
+    
     public boolean checkPathBetweenOriginAndCard(SaboteurMove move, SaboteurTile[][] boardState) {
     	int[] originPosition = {originPos, originPos};
     	ArrayList<int[]> origin = new ArrayList<>(Arrays.asList(originPosition));
     	
     	
     	int[] movePos = move.getPosPlayed();
+    	int[][] moves = {{0, -1},{0, 1},{1, 0},{-1, 0}};
+        int i = movePos[0];
+        int j = movePos[1];
+        ArrayList<int[]> neighbors = new ArrayList<>();
+        
+        for (int m = 0; m < 4; m++) {
+            if (0 <= i+moves[m][0] && i+moves[m][0] < BOARD_SIZE && 0 <= j+moves[m][1] && j+moves[m][1] < BOARD_SIZE) { //if the hypothetical neighbor is still inside the board
+                int[] neighborPos = new int[]{i+moves[m][0],j+moves[m][1]};
+                if(boardState[neighborPos[0]][neighborPos[1]] != null) neighbors.add(neighborPos);
+            }
+        }
+        
+        for (int[] neighbor : neighbors) {
+	    	if (checkPath(boardState, origin, neighbor)) {
+	    		// System.out.println("Connected to origin!");
+	    		return true;
+	    	}
+        }
+    	// System.out.println("Not connected to origin!");
+    	return false;
+    }
+    
+    // Same as above method but checking a position instead of a move
+    public boolean checkPathBetweenOriginAndPos(int[] movePos, SaboteurTile[][] boardState) {
+    	int[] originPosition = {originPos, originPos};
+    	ArrayList<int[]> origin = new ArrayList<>(Arrays.asList(originPosition));
+    	
     	int[][] moves = {{0, -1},{0, 1},{1, 0},{-1, 0}};
         int i = movePos[0];
         int j = movePos[1];
@@ -175,6 +212,8 @@ public class MyTools {
         ArrayList<SaboteurMove> moves = bs.getAllLegalMoves();
         SaboteurMove bestMove = null;
         double min_dist = Integer.MAX_VALUE;
+        int best_value = Integer.MIN_VALUE;
+        int value = 1000;
         int[][]intBoard = bs.getHiddenIntBoard();
 
         int x_goal = 3 * goal[0] + 1;
@@ -183,6 +222,13 @@ public class MyTools {
         // Best moves are using connectors tiles
         for(SaboteurMove m : moves){
             if(m.getCardPlayed() instanceof SaboteurTile){
+            	BoardStateClone stateClone = new BoardStateClone(bs);
+            	/*
+            	if (winningMove(m, stateClone) && bs.isLegal(m)) {
+            		System.out.println("Winning move");
+            		return m;
+            	}
+            	*/
             	if (checkPathBetweenOriginAndCard(m, bs.getHiddenBoard())) {
 	                SaboteurTile tile = (SaboteurTile) m.getCardPlayed();
 	                if(connectors.contains(tile.getIdx())){
@@ -190,8 +236,9 @@ public class MyTools {
 	                        int x_left = 3 * m.getPosPlayed()[0];
 	                        int y_left = 3 * m.getPosPlayed()[1] + 1;
 	                        double dist = Math.sqrt((x_goal - x_left)^2 + (y_goal - y_left)^2);
-	                        if(min_dist > dist){
-	                            min_dist = dist;
+	                        int curr_value = (int) (value/dist) + 30;
+	                        if(curr_value > best_value){
+	                            best_value = curr_value;
 	                            bestMove = m;
 	                        }
 	                    }
@@ -199,8 +246,9 @@ public class MyTools {
 	                        int x_right = 3 * m.getPosPlayed()[0] + 2;
 	                        int y_right = 3 * m.getPosPlayed()[1] + 1;
 	                        double dist = Math.sqrt((x_goal - x_right)^2 + (y_goal - y_right)^2);
-	                        if(min_dist > dist){
-	                            min_dist = dist;
+	                        int curr_value = (int) (value/dist) + 30;
+	                        if(curr_value > best_value){
+	                            best_value = curr_value;
 	                            bestMove = m;
 	                        }
 	                    }
@@ -208,8 +256,9 @@ public class MyTools {
 	                        int x_top = 3 * m.getPosPlayed()[0] + 1;
 	                        int y_top = 3 * m.getPosPlayed()[1] + 2;
 	                        double dist = Math.sqrt((x_goal - x_top)^2 + (y_goal - y_top)^2);
-	                        if(min_dist > dist){
-	                            min_dist = dist;
+	                        int curr_value = (int) (value/dist) + 10;
+	                        if(curr_value > best_value){
+	                            best_value = curr_value;
 	                            bestMove = m;
 	                        }
 	                    }
@@ -217,8 +266,9 @@ public class MyTools {
 	                        int x_bottom = 3 * m.getPosPlayed()[0] + 1;
 	                        int y_bottom = 3 * m.getPosPlayed()[1];
 	                        double dist = Math.sqrt((x_goal - x_bottom)^2 + (y_goal - y_bottom)^2);
-	                        if(min_dist > dist){
-	                            min_dist = dist;
+	                        int curr_value = (int) (value/dist) + 100;
+	                        if(curr_value > best_value){
+	                            best_value = curr_value;
 	                            bestMove = m;
 	                        }
 	                    }

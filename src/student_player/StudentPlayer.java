@@ -105,7 +105,6 @@ public class StudentPlayer extends SaboteurPlayer {
         	System.out.println(tool.checkPathBetweenOriginAndCard(move, boardState.getHiddenBoard()));
         	return move;
         }
-        
         /*
         BoardStateClone MCTSstate = new BoardStateClone(this.stateClone);
 		ISMCTS player = new ISMCTS(MCTSstate, 2000, boardState.getTurnPlayer());
@@ -118,7 +117,7 @@ public class StudentPlayer extends SaboteurPlayer {
         	return nextMove;
         }
         */
-        
+
         if(tool.hasDeadEndCards(hand)){
             SaboteurMove dropMove = new SaboteurMove(new SaboteurDrop(), tool.getWorstDeadEnd(boardState), 0, boardState.getTurnPlayer());
             System.out.println("Drop worst card");

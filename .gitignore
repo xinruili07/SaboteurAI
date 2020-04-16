@@ -10,3 +10,6 @@
 .idea
 SaboteurAI.iml
 out
+
+#Ignore log files
+logs/*.log
