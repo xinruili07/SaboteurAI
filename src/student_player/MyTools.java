@@ -63,8 +63,8 @@ public class MyTools {
 
     public SaboteurMove playMalusCard(SaboteurBoardState bs){
         ArrayList<SaboteurCard> hand = bs.getCurrentPlayerCards();
-        if(isCardInHand(hand,"Bonus")){
-            int index = getCardIndexInHand(hand,"Bonus");
+        if(isCardInHand(hand,"Malus")){
+            int index = getCardIndexInHand(hand,"Malus");
             SaboteurCard card = hand.get(index);
             return new SaboteurMove(card,0,0,bs.getTurnPlayer());
         }
